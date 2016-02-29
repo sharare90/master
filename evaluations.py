@@ -20,6 +20,7 @@ class SimpleEvaluation(Evaluation):
     def evaluate(self, test_set, test_labels, test_image_numbers):
         sum_evaluation = 0
         for i in range(len(test_set)):
-            sum_evaluation += similarity(self.model.test(test_set[i]), test_labels[i])
-        accuracy = sum_evaluation/float(len(test_set))
+            print 'test image number for evaluation: %d ' % (i + 1)
+            sum_evaluation += similarity(self.model.test(test_set[i]), test_labels[i], consider_black_points=False)
+        accuracy = sum_evaluation / float(len(test_set))
         return accuracy

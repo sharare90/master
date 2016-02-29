@@ -7,6 +7,13 @@ IMAGE_NUMBER_TO_DISPLAY = 20
 
 
 def display(image, write_to_file=False, label=None):
+    """ This function displays the image with its label.
+    inputs: image, write_to_file=False, label=None
+    If lable is not None the values of label will be colorized.
+    If label value is 128 the pixel will be red.
+    If label valus is 192 the pixel will be green.
+    If label value is 254 the pixel will be blue.
+    """
     if label is not None:
         im = np.zeros([256, 256, 3])
         im[:, :, 0] = image[:, :]
@@ -14,12 +21,11 @@ def display(image, write_to_file=False, label=None):
         im[:, :, 2] = image[:, :]
         for i in range(256):
             for j in range(256):
-                ind = 256 * i + j
-                if label[4 * ind + 1, 0] == 1:
+                if label[i, j] == 128:
                     im[i, j, 0] = 1
-                elif label[4 * ind + 2, 0] == 1:
+                elif label[i, j] == 192:
                     im[i, j, 1] = 1
-                elif label[4 * ind + 3, 0] == 1:
+                elif label[i, j] == 254:
                     im[i, j, 2] = 1
         image = im
     plt.imshow(image, cmap="gray")

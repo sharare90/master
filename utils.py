@@ -1,6 +1,9 @@
 from math import e
 
 import numpy as np
+
+from read_data import post_process
+
 from settings import DECIMAL_POINT_ROUND, THRESHOLD_128, THRESHOLD_192, THRESHOLD_0
 
 __author__ = 'sharare'
@@ -23,16 +26,31 @@ def sigmoid_derivative(num, output_polarization=True):
 
 
 def create_random_weights(n, m):
-    return np.matrix(np.random.rand(n, m))
+    return np.matrix(2 * np.random.rand(n, m) - 1)
 
 
-def similarity(a, b):
+def similarity(guess_label, label, consider_black_points=True):
     counter = 0
-    c = a == b
-    for i in range(c.size):
-        if c[i, 0]:
-            counter += 1
-    return float(counter) / float(a.size)
+    guess_label = post_process(guess_label)
+    c = guess_label == label
+    if consider_black_points:
+        num_all_pixels = float(guess_label.size)
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
+                if c[i, j]:
+                    counter += 1
+    else:
+        num_all_pixels = 0
+        for i in range(c.shape[0]):
+            for j in range(c.shape[1]):
+                if label[i, j] != 0:
+                    if c[i, j]:
+                        counter += 1
+                    num_all_pixels += 1
+                elif not c[i, j]:
+                    # TODO consider what happens if model guesses incorrectly about a pixel which is black in label
+                    pass
+    return float(counter) / num_all_pixels
 
 
 def maximization(output):
@@ -40,9 +58,20 @@ def maximization(output):
         max_val = -2
         max_index = -1
         for j in [0, 1, 2, 3]:
-            if output[4 * i + j] > max_val:
-                max_val = output[4 * i + j]
+            if output[4 * i + j][0, 0] > max_val:
+                max_val = output[4 * i + j][0, 0]
                 max_index = j
-                output[4 * i + j] = -1
+            output[4 * i + j] = -1
         output[4 * i + max_index] = 1
     return output
+
+# def maximization(output):
+#     max_val = -2
+#     max_index = -1
+#     for i in xrange(len(output)):
+#         if output[i][0, 0] > max_val:
+#             max_val = output[i][0, 0]
+#             max_index = i
+#         output[i] = -1
+#     output[max_index] = 1
+#     return output

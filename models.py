@@ -67,20 +67,16 @@ class NeuralNetwork(Model):
     def back_propagate(self, output, label):
         # normalize_output()
         error = label - output
-        delta = np.array(error) * np.array(sigmoid_derivative(self.layers[-1].input))
-        delta = np.matrix(delta)
+        delta = np.multiply(error, sigmoid_derivative(self.layers[-1].input))
         delta_weights = []
         delta_bias = []
         for i in xrange(len(self.weights), 0, -1):
-            delta_w = (np.array(self.layers[i - 1].output) * np.array(delta).transpose() * self.learning_rate)
-            delta_w = np.matrix(delta_w)
-            delta_b = np.matrix(self.learning_rate * delta)
+            delta_w = self.layers[i - 1].output * delta.transpose() * self.learning_rate
+            delta_b = self.learning_rate * delta
             delta_weights.append(delta_w)
             delta_bias.append(delta_b)
             error = self.weights[i-1] * delta
-            error = np.matrix(error)
-            delta = np.array(error) * np.array(sigmoid_derivative(self.layers[i-1].input))
-            delta = np.matrix(delta)
+            delta = np.multiply(error, sigmoid_derivative(self.layers[i - 1].input))
         self.update_weights(delta_weights, delta_bias)
 
     def update_weights(self, delta_weights, delta_bias):
