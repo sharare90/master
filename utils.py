@@ -1,5 +1,7 @@
 from math import e
 
+import tensorflow as tf
+
 import numpy as np
 
 from read_data import post_process
@@ -26,8 +28,9 @@ def sigmoid_derivative(num, output_polarization=True):
 
 
 def create_random_weights(n, m):
-    return np.matrix(2 * np.random.rand(n, m) - 1)
-
+    if m == 1:
+        return tf.Variable(tf.zeros([n]))
+    return tf.Variable(tf.zeros([n, m]))
 
 def similarity(guess_label, label, consider_black_points=True):
     counter = 0

@@ -1,6 +1,8 @@
 from evaluations import SimpleEvaluation
 from read_data import random_select, post_process, pre_process
-from models import DeepBeliefNetwork, NeuralNetwork
+# from models import DeepBeliefNetwork, NeuralNetwork
+from models_in_gpu import DeepBeliefNetwork, NeuralNetwork
+
 from read_data import get_file
 from display import display
 
@@ -27,9 +29,9 @@ simple_evaluation = SimpleEvaluation(deep_belief_net)
 accuracy = simple_evaluation.evaluate(test_set, test_labels, test_image_numbers)
 print accuracy
 
-if DISPLAY_NEURAL_NETWORK_SEGMENTATION:
-    img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION)
-    lbl = pre_process(lbl)
-    guess = deep_belief_net.test(img)
-    guess = post_process(guess)
-    display(img.reshape(256, 256), label=guess)
+# if DISPLAY_NEURAL_NETWORK_SEGMENTATION:
+#     img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION)
+#     lbl = pre_process(lbl)
+#     guess = deep_belief_net.test(img)
+#     guess = post_process(guess)
+#     display(img.reshape(256, 256), label=guess)

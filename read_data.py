@@ -143,7 +143,7 @@ def get_number_of_images():
 
 def random_select(ratio):
     """Selects a part of data for train and another part for test randomly
-    then return 4 objects. train_set, test_set, train_labels, test_labels"""
+    then returns 4 objects. train_set, test_set, train_labels, test_labels"""
     train_set = []
     test_set = []
     train_labels = []
@@ -152,6 +152,7 @@ def random_select(ratio):
     test_image_numbers = range(number_of_images)
     train_image_numbers = sample(test_image_numbers, int(ratio * number_of_images))
     counter = 0
+    train_image_numbers = train_image_numbers[:10]
     for i in train_image_numbers:
         img, label = get_file(i)
         label = pre_process(label)
@@ -162,6 +163,7 @@ def random_select(ratio):
         print '%d file processed' % counter
         test_image_numbers.remove(i)
 
+    test_image_numbers = test_image_numbers[:10]
     for i in test_image_numbers:
         test_img, test_lbl = get_file(i)
         test_set.append(test_img)
