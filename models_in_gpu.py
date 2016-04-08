@@ -1,3 +1,6 @@
+import pycuda.driver as cuda
+import tensorflow as tf
+
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -21,21 +24,18 @@ class Model(object):
 
 class Layer(object):
     def __init__(self, number_of_neurons):
-        self.input = []
-        self.output = []
+        self.input = None
+        self.output = None
         self.n = number_of_neurons
 
 
 class NeuralNetwork(Model):
-    def __init__(self, layers_size, learning_rate, initial_weights=None, initial_bias=None, layers=None):
+    def __init__(self, layers_size, learning_rate, initial_weights=None, initial_bias=None):
         self.layers_size = layers_size
-        if layers:
-            self.layers = layers
-        else:
-            self.layers = []
-            for i in xrange(len(layers_size)):
-                l = Layer(layers_size[i])
-                self.layers.append(l)
+        self.layers = []
+        for i in xrange(len(layers_size)):
+            l = Layer(layers_size[i])
+            self.layers.append(l)
 
         self.learning_rate = learning_rate
         if initial_weights is None:
@@ -47,47 +47,29 @@ class NeuralNetwork(Model):
             self.bias = self.create_initial_bias()
         else:
             self.bias = initial_bias
+        self.sess = None
 
     def train(self, train_set, labels, train_image_numbers, iteration_number):
-        for iteration in xrange(iteration_number):
-            for i in xrange(len(train_set)):
-                print i
-                train_input = train_set[i]
-                output = self.feed_forward(train_input)
-                self.back_propagate(output, labels[i])
-
-    def feed_forward(self, train_input):
-        self.layers[0].input = train_input
-        self.layers[0].output = train_input
+        y_ = tf.placeholder(tf.float32, [None, self.layers_size[-1]])
+        self.layers[0].input = tf.placeholder(tf.float32, [None, self.layers_size[0]])
+        self.layers[0].output = tf.nn.softmax(self.layers[0].input)
         for i in xrange(len(self.layers) - 1):
-            self.layers[i + 1].input = (self.weights[i].transpose() * self.layers[i].output) + self.bias[i]
-            self.layers[i + 1].output = sigmoid(self.layers[i + 1].input)
-        return self.layers[-1].output
+            self.layers[i + 1].input = tf.matmul(self.layers[i].output, self.weights[i]) + self.bias[i]
+            self.layers[i + 1].output = tf.nn.softmax(self.layers[i + 1].input)
+        loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
+        train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(loss_function)
+        self.sess = tf.Session()
+        self.sess.run(tf.initialize_all_variables())
+        for iteration in xrange(iteration_number):
+            # input, labels = train_set.next_batch(self.batch_size)
+            for i in xrange(len(train_set)):
+                input_imgs = train_set[i].transpose()
+                lbls = labels[i].transpose()
+                self.sess.run(train_step, feed_dict={self.layers[0].input: input_imgs, y_: lbls})
 
-    def back_propagate(self, output, label):
-        # normalize_output()
-        error = label - output
-        delta = np.multiply(error, sigmoid_derivative(self.layers[-1].input))
-        delta_weights = []
-        delta_bias = []
-        for i in xrange(len(self.weights), 0, -1):
-            delta_w = self.layers[i - 1].output * delta.transpose() * self.learning_rate
-            delta_b = self.learning_rate * delta
-            delta_weights.append(delta_w)
-            delta_bias.append(delta_b)
-            error = self.weights[i-1] * delta
-            delta = np.multiply(error, sigmoid_derivative(self.layers[i - 1].input))
-        self.update_weights(delta_weights, delta_bias)
-
-    def update_weights(self, delta_weights, delta_bias):
-        for i in range(len(self.weights)):
-            self.weights[i] += delta_weights[-i-1]
-            self.bias[i] += delta_bias[-i-1]
-
-    def test(self, img, output_polarization=True):
-        if output_polarization:
-            return maximization(self.feed_forward(img))
-        return self.feed_forward(img)
+    def test(self, img):
+        output = self.layers[-1].output
+        return self.sess.run(output, feed_dict={self.layers[0].input: img.transpose()})
 
     def create_initial_weights(self):
         weights = []

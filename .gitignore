@@ -1,0 +1,8 @@
+images/
+labels/
+meta/
+*.pyc
+.idea/
+*~
+TesetSetHW1/
+TrainSetHW1/

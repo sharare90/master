@@ -4,7 +4,6 @@ from random import sample
 import numpy as np
 
 import settings
-from settings import DECIMAL_POINT_ROUND
 
 
 def get_all_files_in_directory(dir_address):
@@ -21,7 +20,7 @@ def get_file(image_number, column_format=True):
             header_file.close()
             buchar_file_name = settings.LABELS_ADDRESS + file_name.replace(settings.HEADER_FILES_SUFFIX,
                                                                            settings.BUCHAR_FILES_SUFFIX)
-            label = read_buchar_file(buchar_file_name, image_number, number_of_slices, column_format=column_format)
+            label = read_buchar_file(buchar_file_name, image_number, number_of_slices)
             offsets = read_offsets()
             img_name = buchar_file_name[buchar_file_name.index('/') + 1:buchar_file_name.index('.')]
             folder_name = img_name + '/'
@@ -34,21 +33,22 @@ def get_file(image_number, column_format=True):
             header_file.close()
 
 
-def read_buchar_file(input_filename, slice_number, number_of_slices, column_format=False):
+def read_buchar_file(input_filename, slice_number, number_of_slices):
     dtype = np.dtype('>u1')  # big-endian unsigned integer (8bit)
 
     # Reading.
     fid = open(input_filename, 'rb')
     data = np.fromfile(fid, dtype)
-    if column_format:
-        # This reshaping is the original image in column format
-        image = data.reshape(number_of_slices, 256 * 256)
-        image = image[slice_number, :]
-        image = discretization(image)
-        image = np.matrix(image)
-    else:
-        image = data.reshape(number_of_slices, 256, 256)
-        image = image[slice_number, :, :]
+    # if column_format:
+    #     # This reshaping is the original image in column format
+    #     image = data.reshape(number_of_slices, 256 * 256)
+    #     image = image[slice_number, :]
+    #     image = discretization(image)
+    #     image = np.matrix(image)
+    # else:
+    image = data.reshape(number_of_slices, 256, 256)
+    image = image[slice_number, :, :]
+    image = np.matrix(image)
     return image
 
 
@@ -71,6 +71,28 @@ def normalization(image):
     image = (image - min_image) / float(max_image - min_image)
     # image = np.round(image, DECIMAL_POINT_ROUND)
     return image
+
+
+def pre_process(image):
+    image = image.reshape(256 * 256, 1)
+    image = discretization(image)
+    return image
+
+
+def post_process(lbl):
+    img = np.zeros((256, 256))
+    for i in xrange(256):
+        for j in xrange(256):
+            ind = 4 * (256 * i + j)
+            if lbl[ind] == 1:
+                img[i, j] = 0
+            elif lbl[ind + 1] == 1:
+                img[i, j] = 128
+            elif lbl[ind + 2] == 1:
+                img[i, j] = 192
+            else:
+                img[i, j] = 254
+    return img
 
 
 def discretization(label):
@@ -121,7 +143,7 @@ def get_number_of_images():
 
 def random_select(ratio):
     """Selects a part of data for train and another part for test randomly
-    then return 4 objects. train_set, test_set, train_labels, test_labels"""
+    then returns 4 objects. train_set, test_set, train_labels, test_labels"""
     train_set = []
     test_set = []
     train_labels = []
@@ -129,15 +151,25 @@ def random_select(ratio):
     number_of_images = get_number_of_images()
     test_image_numbers = range(number_of_images)
     train_image_numbers = sample(test_image_numbers, int(ratio * number_of_images))
+    counter = 0
+    train_image_numbers = train_image_numbers[:10]
     for i in train_image_numbers:
         img, label = get_file(i)
+        label = pre_process(label)
         train_set.append(img)
         train_labels.append(label)
+        print 'Image number: %d' % i
+        counter += 1
+        print '%d file processed' % counter
         test_image_numbers.remove(i)
 
+    test_image_numbers = test_image_numbers[:10]
     for i in test_image_numbers:
         test_img, test_lbl = get_file(i)
         test_set.append(test_img)
+        print 'Image number: %d' % i
+        counter += 1
+        print '%d file processed' % counter
         test_labels.append(test_lbl)
 
     return train_set, test_set, train_labels, test_labels, train_image_numbers, test_image_numbers
