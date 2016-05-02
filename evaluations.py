@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
+from settings import THRESHOLD_0, THRESHOLD_254, THRESHOLD_192, THRESHOLD_128
 
-__author__ = 'sharare'
+import tensorflow as tf
 
 
 class Evaluation(object):
@@ -16,19 +17,25 @@ class Evaluation(object):
 
 
 class SimpleEvaluation(Evaluation):
-    def evaluate(self, test_set, test_labels, test_image_numbers):
-        import tensorflow as tf
-        from read_data import discretization
-        # sess = tf.Session()
-        # sess.run(tf.initialize_all_variables())
-        # y_ = tf.placeholder(tf.float32, [1, self.model.layers_size[-1]])
-        # sum_evaluation = 0
-        for i in range(len(test_set)):
-            guess = self.model.test(test_set[i])
-            # correct_prediction = tf.equal(tf.argmax(tf.cast(self.model.test(test_set[i].transpose()), tf.float32), 1), tf.argmax(y_, 1))
-            # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-            # similarity = sess.run(accuracy, feed_dict={y_: discretization(test_labels[i].reshape(256 * 256, 1)).transpose()})
-            # sum_evaluation += similarity(self.model.test(test_set[i]), test_labels[i], consider_black_points=False)
-            # sum_evaluation += similarity
-        # acc = sum_evaluation / float(len(test_set))
-        # return acc
+    def evaluate(self, dataset):
+        sess = tf.Session()
+        images, labels = dataset.next_batch()
+        output = self.model.test(images)
+        guess = get_index_of_thresholds(output)
+        _labels = tf.placeholder(tf.float32, [None])
+        tf_labels = get_index_of_thresholds(_labels)
+        correct_prediction = tf.equal(guess, tf_labels)
+        accuracy = tf.reduce_mean(correct_prediction)
+        print(sess.run(accuracy, feed_dict={_labels: labels}))
+
+
+def get_index_of_thresholds(output):
+    a = output - THRESHOLD_0
+    b = output - THRESHOLD_128
+    c = output - THRESHOLD_192
+    d = output - THRESHOLD_254
+    distances = tf.concat(0, [a, b, c, d])
+    size_of_output = 256 * 256
+    distances = tf.reshape(distances, [4, size_of_output])
+
+    return tf.argmin(distances, 0)

@@ -4,8 +4,6 @@ import tensorflow as tf
 
 import numpy as np
 
-from read_data import post_process
-
 from settings import DECIMAL_POINT_ROUND, THRESHOLD_128, THRESHOLD_192, THRESHOLD_0
 
 __author__ = 'sharare'
@@ -78,3 +76,5 @@ def maximization(output):
 #         output[i] = -1
 #     output[max_index] = 1
 #     return output
+def post_process(input):
+    return input

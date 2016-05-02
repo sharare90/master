@@ -1,5 +1,6 @@
 import pycuda.driver as cuda
 import tensorflow as tf
+import math
 
 from abc import ABCMeta, abstractmethod
 
@@ -30,7 +31,7 @@ class Layer(object):
 
 
 class NeuralNetwork(Model):
-    def __init__(self, layers_size, learning_rate, initial_weights=None, initial_bias=None):
+    def __init__(self, layers_size, learning_rate, initial_weights=None, initial_bias=None, layers=None):
         self.layers_size = layers_size
         self.layers = []
         for i in xrange(len(layers_size)):
@@ -49,7 +50,7 @@ class NeuralNetwork(Model):
             self.bias = initial_bias
         self.sess = None
 
-    def train(self, train_set, labels, train_image_numbers, iteration_number):
+    def train(self, dataset, iteration_number):
         y_ = tf.placeholder(tf.float32, [None, self.layers_size[-1]])
         self.layers[0].input = tf.placeholder(tf.float32, [None, self.layers_size[0]])
         self.layers[0].output = tf.nn.softmax(self.layers[0].input)
@@ -61,11 +62,8 @@ class NeuralNetwork(Model):
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
         for iteration in xrange(iteration_number):
-            # input, labels = train_set.next_batch(self.batch_size)
-            for i in xrange(len(train_set)):
-                input_imgs = train_set[i].transpose()
-                lbls = labels[i].transpose()
-                self.sess.run(train_step, feed_dict={self.layers[0].input: input_imgs, y_: lbls})
+            images, labels = dataset.next_batch()
+            self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
 
     def test(self, img):
         output = self.layers[-1].output
@@ -88,26 +86,72 @@ class NeuralNetwork(Model):
 
 
 class RestrictedBoltzmanMachine(NeuralNetwork):
-    def train(self, train_set, labels, train_image_numbers, iteration_number):
-        for iteration in xrange(iteration_number):
-            for i in xrange(len(train_set)):
-                print 'rbm:' + str(i)
-                train_input = train_set[i]
-                self.layers[0].input = train_input
-                self.layers[0].output = train_input
-                v = self.layers[0].output
-                h = self.create_h_given_v(v)
-                v2 = self.create_v_given_h(h)
-                h2 = self.create_h_given_v(v2)
-                delta_w = self.learning_rate * (
-                    (v * h.transpose()) - (v2 * h2.transpose()))
-                self.update_weights([delta_w, ], [np.matrix(np.zeros([self.layers_size[1], 1])), ])
+    """ represents a sigmoidal rbm """
 
-    def create_h_given_v(self, v):
-        return sigmoid(self.weights[0].transpose() * v + self.bias[0])
+    def __init__(self, name, input_size, output_size):
+        with tf.name_scope("rbm_" + name):
+            self.weights = tf.Variable(
+                tf.truncated_normal([input_size, output_size],
+                    stddev=1.0 / math.sqrt(float(input_size))), name="weights")
+            self.v_bias = tf.Variable(tf.zeros([input_size]), name="v_bias")
+            self.h_bias = tf.Variable(tf.zeros([output_size]), name="h_bias")
 
-    def create_v_given_h(self, h):
-        return sigmoid(self.weights[0]) * h
+    def propup(self, visible):
+        """ P(h|v) """
+        return tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
+
+    def propdown(self, hidden):
+        """ P(v|h) """
+        return tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
+
+    def sample_h_given_v(self, v_sample):
+        """ Generate a sample from the hidden layer """
+        return sample_prob(self.propup(v_sample))
+
+    def sample_v_given_h(self, h_sample):
+        """ Generate a sample from the visible layer """
+        return sample_prob(self.propdown(h_sample))
+
+    def gibbs_hvh(self, h0_sample):
+        """ A gibbs step starting from the hidden layer """
+        v_sample = self.sample_v_given_h(h0_sample)
+        h_sample = self.sample_h_given_v(v_sample)
+        return [v_sample, h_sample]
+
+    def gibbs_vhv(self, v0_sample):
+        """ A gibbs step starting from the visible layer """
+        h_sample = self.sample_h_given_v(v0_sample)
+        v_sample = self.sample_v_given_h(h_sample)
+        return [h_sample, v_sample]
+
+    def cd1(self, visibles, learning_rate=0.1):
+        " One step of contrastive divergence, with Rao-Blackwellization "
+        h_start = self.propup(visibles)
+        v_end = self.propdown(h_start)
+        h_end = self.propup(v_end)
+        w_positive_grad = tf.matmul(tf.transpose(visibles), h_start)
+        w_negative_grad = tf.matmul(tf.transpose(v_end), h_end)
+
+        update_w = self.weights.assign_add(learning_rate * (w_positive_grad - w_negative_grad))
+
+        update_vb = self.v_bias.assign_add(learning_rate * tf.reduce_mean(visibles - v_end, 0))
+
+        update_hb = self.h_bias.assign_add(learning_rate * tf.reduce_mean(h_start - h_end, 0))
+
+        return [update_w, update_vb, update_hb]
+
+    def reconstruction_error(self, dataset):
+        """ The reconstruction cost for the whole dataset """
+        err = tf.stop_gradient(dataset - self.gibbs_vhv(dataset)[1])
+        return tf.reduce_sum(err * err)
+
+
+def sample_prob(probs):
+    """Takes a tensor of probabilities (as from a sigmoidal activation)
+       and samples from all the distributions"""
+    return tf.nn.relu(
+        tf.sign(
+            probs - tf.random_uniform(probs.get_shape())))
 
 
 class DeepBeliefNetwork(NeuralNetwork):
@@ -120,8 +164,7 @@ class DeepBeliefNetwork(NeuralNetwork):
             w = [self.weights[i], ]
             b = [self.bias[i], ]
             l = [self.layers[i], self.layers[i + 1]]
-            rbm = RestrictedBoltzmanMachine(l_size, self.learning_rate, initial_weights=w, initial_bias=b,
-                                            layers=l)
+            rbm = RestrictedBoltzmanMachine(l_size, self.learning_rate, initial_weights=w, initial_bias=b, layers=l)
             tr_set = []
             for t in train_set:
                 t_in = t
