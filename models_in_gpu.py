@@ -65,9 +65,9 @@ class NeuralNetwork(Model):
             images, labels = dataset.next_batch()
             self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
 
-    def test(self, img):
+    def test(self, imgs):
         output = self.layers[-1].output
-        return self.sess.run(output, feed_dict={self.layers[0].input: img.transpose()})
+        return self.sess.run(output, feed_dict={self.layers[0].input: imgs})
 
     def create_initial_weights(self):
         weights = []
