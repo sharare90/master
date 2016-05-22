@@ -57,7 +57,8 @@ class NeuralNetwork(Model):
         for i in xrange(len(self.layers) - 1):
             self.layers[i + 1].input = tf.matmul(self.layers[i].output, self.weights[i]) + self.bias[i]
             self.layers[i + 1].output = tf.nn.softmax(self.layers[i + 1].input)
-        loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
+        # loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
+        loss_function = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
         train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(loss_function)
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
@@ -92,7 +93,7 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
         with tf.name_scope("rbm_" + name):
             self.weights = tf.Variable(
                 tf.truncated_normal([input_size, output_size],
-                    stddev=1.0 / math.sqrt(float(input_size))), name="weights")
+                                    stddev=1.0 / math.sqrt(float(input_size))), name="weights")
             self.v_bias = tf.Variable(tf.zeros([input_size]), name="v_bias")
             self.h_bias = tf.Variable(tf.zeros([output_size]), name="h_bias")
 

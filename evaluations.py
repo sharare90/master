@@ -21,13 +21,17 @@ class SimpleEvaluation(Evaluation):
         sess = tf.Session()
         images, labels = dataset.next_batch()
         outputs = self.model.test(images)
+        for i in outputs:
+            for j in i:
+                if j != 0:
+                    print j
         _outputs = tf.placeholder(tf.float32, [None, 256 * 256])
         _labels = tf.placeholder(tf.float32, [None, 256 * 256])
         guess = get_index_of_thresholds(_outputs)
         tf_labels = get_index_of_thresholds(_labels)
         correct_prediction = tf.equal(guess, tf_labels)
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        print(sess.run(accuracy, feed_dict={_labels: labels, _outputs: outputs}))
+        return sess.run(accuracy, feed_dict={_labels: labels, _outputs: outputs})
 
 
 def get_index_of_thresholds(output):
