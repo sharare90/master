@@ -15,7 +15,7 @@ class Model(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def train(self, train_set, labels, train_image_numbers):
+    def train(self, dataset, iteration_number):
         pass
 
     @abstractmethod
@@ -155,21 +155,20 @@ def sample_prob(probs):
 
 
 class DeepBeliefNetwork(NeuralNetwork):
-    def train(self, train_set, labels, train_image_numbers, iteration_number, rbm_iteration_number=None):
-        if rbm_iteration_number is None:
-            rbm_iteration_number = iteration_number
+    def train(self, dataset, iteration_number):
+        batch_size = dataset.batch_size
+        dataset.batch_size = dataset.count()
+
+        input_images = dataset.next_batch()[0]
+        input_images = tf.cast(input_images, tf.float32)
         for i in range(len(self.layers) - 1):
-            print i
-            l_size = [self.layers_size[i], self.layers_size[i + 1]]
-            w = [self.weights[i], ]
-            b = [self.bias[i], ]
-            l = [self.layers[i], self.layers[i + 1]]
-            rbm = RestrictedBoltzmanMachine(l_size, self.learning_rate, initial_weights=w, initial_bias=b, layers=l)
-            tr_set = []
-            for t in train_set:
-                t_in = t
-                for x in range(i):
-                    t_in = (self.weights[x].transpose() * t_in) + self.bias[x]
-                tr_set.append(t_in)
-            rbm.train(tr_set, None, train_image_numbers, rbm_iteration_number)
-        super(DeepBeliefNetwork, self).train(train_set, labels, train_image_numbers, iteration_number)
+            rbm = RestrictedBoltzmanMachine('rbm', self.layers_size[i], self.layers_size[i + 1])
+            update_w, update_vb, update_hb = rbm.cd1(input_images, self.learning_rate)
+            sess = tf.Session()
+            sess.run(tf.initialize_all_variables())
+            self.weights[i] = tf.Variable(sess.run(update_w))
+            self.bias[i] = tf.Variable(sess.run(update_hb))
+            input_images = sess.run(rbm.propup(input_images))
+
+        dataset.batch_size = batch_size
+        super(DeepBeliefNetwork, self).train(dataset, iteration_number)

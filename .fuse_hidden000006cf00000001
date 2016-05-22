@@ -11,8 +11,7 @@ class DataSet(object):
 
         if dtype == tf.float32:
             # Convert from [0, 255] -> [0.0, 1.0].
-            images = numpy.multiply(images, 1.0 / 1024.0)
-            labels = numpy.multiply(labels, 1)
+            images = numpy.multiply(images, 1.0 / 255.0)
             self.sample_numbers = sample_numbers
             self.batch_size = batch_size
             self._images = images
