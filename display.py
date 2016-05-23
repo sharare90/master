@@ -7,10 +7,10 @@ from read_data import get_file
 
 import numpy as np
 
-IMAGE_NUMBER_TO_DISPLAY = 20
+IMAGE_NUMBER_TO_DISPLAY = 234
 
 
-def display(image, label=None):
+def display(image, guess=None, label=None):
     """ This function displays the image with its label.
     inputs: image, write_to_file=False, label=None
     If lable is not None the values of label will be colorized.
@@ -31,6 +31,9 @@ def display(image, label=None):
                     im[i, j, 1] = 1
                 elif label[i, j] == 254:
                     im[i, j, 2] = 1
+                # if guess[i, j] != label[i, j]:
+                #     im[i, j, 1:2] = 1
+                #     im[i, j, 0] = 0
         image = im
     plt.imshow(image, cmap="gray")
     plt.show()
@@ -38,4 +41,4 @@ def display(image, label=None):
 
 if __name__ == '__main__':
     img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY)
-    display(img.reshape([256, 256]), label=lbl.reshape(256, 256))
+    display(lbl.reshape([256, 256]), guess=lbl.reshape(256, 256), label=lbl.reshape(256, 256))
