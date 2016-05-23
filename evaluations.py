@@ -12,7 +12,7 @@ class Evaluation(object):
         self.model = model
 
     @abstractmethod
-    def evaluate(self, test_set, test_labels, test_image_numbers):
+    def evaluate(self, dataset):
         pass
 
 
@@ -25,8 +25,6 @@ class SimpleEvaluation(Evaluation):
         _labels = tf.placeholder(tf.float32, [None, 256 * 256])
         guess = get_index_of_thresholds(_outputs)
         tf_labels = get_index_of_thresholds(_labels)
-        correct_prediction = tf.equal(guess, tf_labels)
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
         threshold_0 = tf.cast(tf.equal(tf_labels, 0), tf.float32)
         threshold_128 = tf.cast(tf.equal(tf_labels, 1), tf.float32)
@@ -38,10 +36,18 @@ class SimpleEvaluation(Evaluation):
         guess_192 = tf.cast(tf.equal(guess, 2), tf.float32)
         guess_254 = tf.cast(tf.equal(guess, 3), tf.float32)
 
-        accuracy_0 = tf.reduce_sum(tf.mul(guess_0, threshold_0)) / tf.reduce_sum(threshold_0)
-        accuracy_128 = tf.reduce_sum(tf.mul(guess_128, threshold_128)) / tf.reduce_sum(threshold_128)
-        accuracy_192 = tf.reduce_sum(tf.mul(guess_192, threshold_192)) / tf.reduce_sum(threshold_192)
-        accuracy_254 = tf.reduce_sum(tf.mul(guess_254, threshold_254)) / tf.reduce_sum(threshold_254)
+        correct_0 = tf.reduce_sum(tf.mul(guess_0, threshold_0))
+        correct_128 = tf.reduce_sum(tf.mul(guess_128, threshold_128))
+        correct_192 = tf.reduce_sum(tf.mul(guess_192, threshold_192))
+        correct_254 = tf.reduce_sum(tf.mul(guess_254, threshold_254))
+
+        accuracy_0 = correct_0 / tf.reduce_sum(threshold_0)
+        accuracy_128 = correct_128 / tf.reduce_sum(threshold_128)
+        accuracy_192 = correct_192 / tf.reduce_sum(threshold_192)
+        accuracy_254 = correct_254 / tf.reduce_sum(threshold_254)
+
+        accuracy = (correct_128 + correct_192 + correct_254) / (tf.reduce_sum(threshold_128) + tf.reduce_sum(
+            threshold_192) + tf.reduce_sum(threshold_254))
 
         print "0 accuracy: %0.4f" % sess.run(accuracy_0, feed_dict={_labels: labels, _outputs: outputs})
         print "128 accuracy: %0.4f" % sess.run(accuracy_128, feed_dict={_labels: labels, _outputs: outputs})
