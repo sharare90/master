@@ -3,6 +3,9 @@ import ibsr
 
 from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 
+from display import display
+
+from read_data import get_file
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
@@ -19,3 +22,6 @@ print 'checked'
 simple_evaluation = SimpleEvaluation(nn)
 accuracy = simple_evaluation.evaluate(ibsr.test_set)
 print 'accuracy: %0.4f' % accuracy
+
+img, lbl = get_file(10)
+display(img.reshape(256, 256), label=lbl.reshape(256, 256))

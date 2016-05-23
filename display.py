@@ -1,12 +1,16 @@
+import matplotlib
+# matplotlib.rcParams['backend'] = "Qt4Agg"
+
 import matplotlib.pyplot as plt
+
 from read_data import get_file
+
 import numpy as np
-from settings import DECIMAL_POINT_ROUND
 
 IMAGE_NUMBER_TO_DISPLAY = 20
 
 
-def display(image, write_to_file=False, label=None):
+def display(image, label=None):
     """ This function displays the image with its label.
     inputs: image, write_to_file=False, label=None
     If lable is not None the values of label will be colorized.
@@ -29,12 +33,9 @@ def display(image, write_to_file=False, label=None):
                     im[i, j, 2] = 1
         image = im
     plt.imshow(image, cmap="gray")
-    if write_to_file:
-        output_filename = "JPCLN001.PNG"
-        plt.savefig(output_filename)
     plt.show()
 
 
 if __name__ == '__main__':
-    img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY, column_format=True)
-    display(img.reshape([256, 256]), label=lbl)
+    img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY)
+    display(img.reshape([256, 256]), label=lbl.reshape(256, 256))
