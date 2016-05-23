@@ -63,6 +63,7 @@ class NeuralNetwork(Model):
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
         for iteration in xrange(iteration_number):
+            print 'iteration number: %d' % iteration
             images, labels = dataset.next_batch()
             self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
 

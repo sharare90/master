@@ -51,7 +51,7 @@ class SimpleEvaluation(Evaluation):
 
 
 def get_index_of_thresholds(output):
-    DATASET_SIZE = 20
+    DATASET_SIZE = 125
     a = tf.abs(output - THRESHOLD_0)
     b = tf.abs(output - THRESHOLD_128)
     c = tf.abs(output - THRESHOLD_192)

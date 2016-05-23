@@ -11,7 +11,7 @@ class DataSet(object):
 
         if dtype == tf.float32:
             # Convert from [0, 255] -> [0.0, 1.0].
-            images = numpy.multiply(images, 1.0 / 1024.0)
+            images = numpy.multiply(images, 1.0 / 1.0)
             labels = numpy.multiply(labels, 1)
             self.sample_numbers = sample_numbers
             self.batch_size = batch_size
@@ -55,14 +55,16 @@ convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 
 imgs = []
 labels = []
-for i in xrange(100):
+for i in xrange(1126):
     print i
     img, lbl = read_data.get_file(i + 1, column_format=True)
+    max_img = numpy.max(img)
+    img = numpy.multiply(img, 1.0 / float(max_img))
     lbl = lbl.astype('float')
     lbl = convert_label_to_thresholds(lbl)
     imgs.append(img)
     labels.append(lbl)
 
 
-train_set = DataSet(imgs[:80], labels[:80], 40, dtype=tf.float32)
-test_set = DataSet(imgs[80:], labels[80:], 20, dtype=tf.float32)
+train_set = DataSet(imgs[:1000], labels[:1000], 40, dtype=tf.float32)
+test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 125, dtype=tf.float32)

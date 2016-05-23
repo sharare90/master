@@ -7,8 +7,8 @@ from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 20
-layers = [256 * 256, 128, 128, 256 * 256]
-learning_rate = 0.9
+layers = [256 * 256, 10, 256 * 256]
+learning_rate = 0.6
 iteration_number = 1
 
 # nn = NeuralNetwork(layers, learning_rate)
