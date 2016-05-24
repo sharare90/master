@@ -7,7 +7,7 @@ from read_data import get_file
 
 import numpy as np
 
-IMAGE_NUMBER_TO_DISPLAY = 234
+IMAGE_NUMBER_TO_DISPLAY = 896
 
 
 def display(image, guess=None, label=None):

@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy
 import read_data
-from settings import THRESHOLD_0, THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, height_start, height_end, width_start, width_end, height, width
+from settings import THRESHOLD_0, THRESHOLD_128, THRESHOLD_192, THRESHOLD_254
 
 
 class DataSet(object):
@@ -58,9 +58,6 @@ labels = []
 for i in xrange(1126):
     print i
     img, lbl = read_data.get_file(i + 1, column_format=True)
-    img = img.reshape(256, 256)
-    img = img[height_start:height_end, width_start:width_end]
-    img = img.reshape(height * width,)
     max_img = numpy.max(img)
     min_img = numpy.min(img)
     if i == 896:

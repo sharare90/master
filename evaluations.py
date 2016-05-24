@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from settings import THRESHOLD_0, THRESHOLD_254, THRESHOLD_192, THRESHOLD_128
+from settings import THRESHOLD_0, THRESHOLD_254, THRESHOLD_192, THRESHOLD_128, height, width
 
 import tensorflow as tf
 
@@ -58,7 +58,7 @@ class SimpleEvaluation(Evaluation):
 
 
 def get_index_of_thresholds(output):
-    DATASET_SIZE = 25
+    DATASET_SIZE = 125
     a = tf.abs(output - THRESHOLD_0)
     b = tf.abs(output - THRESHOLD_128)
     c = tf.abs(output - THRESHOLD_192)

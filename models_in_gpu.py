@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from utils import sigmoid, sigmoid_derivative, create_random_weights, maximization
-
+from settings import height, width
 __author__ = 'sharare'
 
 
@@ -165,7 +165,6 @@ class DeepBeliefNetwork(NeuralNetwork):
     def train(self, dataset, iteration_number):
         batch_size = dataset.batch_size
         dataset.batch_size = dataset.count()
-
         input_images = dataset.next_batch()[0]
         input_images = tf.cast(input_images, tf.float32)
         for i in range(len(self.layers) - 1):

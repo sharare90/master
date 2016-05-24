@@ -5,11 +5,12 @@ from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 from display import display
 
 from read_data import get_file
+from settings import width, height
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 20
-layers = [256 * 256, 10, 256 * 256 * 4]
+layers = [height * width, 100, 256 * 256 * 4]
 learning_rate = 0.6
 iteration_number = 1
 
@@ -22,9 +23,9 @@ simple_evaluation = SimpleEvaluation(nn)
 accuracy = simple_evaluation.evaluate(ibsr.test_set)
 print 'accuracy: %0.4f' % accuracy
 
-from settings import THRESHOLD_128,THRESHOLD_192,THRESHOLD_254,THRESHOLD_0
+from settings import THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, THRESHOLD_0
 import numpy
-img, lbl = get_file(234)
+img, lbl = get_file(11)
 img = img.reshape(1, img.size)
 guess = nn.test(img)
 a = abs(guess - THRESHOLD_0)
@@ -38,4 +39,5 @@ guess[numpy.where(min_distance == 0)] = 0
 guess[numpy.where(min_distance == 1)] = 128
 guess[numpy.where(min_distance == 2)] = 192
 guess[numpy.where(min_distance == 3)] = 254
-display(img.reshape(256, 256), guess=guess.reshape(256, 256), label=lbl.reshape(256, 256))
+
+display(guess.reshape(256, 256), guess=guess.reshape(256, 256), label=lbl.reshape(256, 256))
