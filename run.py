@@ -9,7 +9,7 @@ from read_data import get_file
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 20
-layers = [256 * 256, 10, 256 * 256]
+layers = [256 * 256, 10, 256 * 256 * 4]
 learning_rate = 0.6
 iteration_number = 1
 

@@ -21,10 +21,10 @@ class SimpleEvaluation(Evaluation):
         sess = tf.Session()
         images, labels = dataset.next_batch()
         outputs = self.model.test(images)
-        _outputs = tf.placeholder(tf.float32, [None, 256 * 256])
-        _labels = tf.placeholder(tf.float32, [None, 256 * 256])
-        guess = get_index_of_thresholds(_outputs)
-        tf_labels = get_index_of_thresholds(_labels)
+        guess = tf.placeholder(tf.float32, [None, 256 * 256])
+        tf_labels = tf.placeholder(tf.float32, [None, 256 * 256])
+        # guess = get_index_of_thresholds(_outputs)
+        # tf_labels = get_index_of_thresholds(_labels)
 
         threshold_0 = tf.cast(tf.equal(tf_labels, 0), tf.float32)
         threshold_128 = tf.cast(tf.equal(tf_labels, 1), tf.float32)
@@ -49,15 +49,16 @@ class SimpleEvaluation(Evaluation):
         accuracy = (correct_128 + correct_192 + correct_254) / (tf.reduce_sum(threshold_128) + tf.reduce_sum(
             threshold_192) + tf.reduce_sum(threshold_254))
 
-        print "0 accuracy: %0.4f" % sess.run(accuracy_0, feed_dict={_labels: labels, _outputs: outputs})
-        print "128 accuracy: %0.4f" % sess.run(accuracy_128, feed_dict={_labels: labels, _outputs: outputs})
-        print "192 accuracy: %0.4f" % sess.run(accuracy_192, feed_dict={_labels: labels, _outputs: outputs})
-        print "254 accuracy: %0.4f" % sess.run(accuracy_254, feed_dict={_labels: labels, _outputs: outputs})
-        return sess.run(accuracy, feed_dict={_labels: labels, _outputs: outputs})
+        print "0 accuracy: %0.4f" % sess.run(accuracy_0, feed_dict={tf_labels: labels, guess: outputs})
+        print "128 accuracy: %0.4f" % sess.run(accuracy_128, feed_dict={tf_labels: labels, guess: outputs})
+        print "192 accuracy: %0.4f" % sess.run(accuracy_192, feed_dict={tf_labels: labels, guess: outputs})
+        print "254 accuracy: %0.4f" % sess.run(accuracy_254, feed_dict={tf_labels: labels, guess: outputs})
+        # accuracy = tf.reduce_mean(tf.cast(tf.equal(guess, tf_labels), tf.float32))
+        return sess.run(accuracy, feed_dict={tf_labels: labels, guess: outputs})
 
 
 def get_index_of_thresholds(output):
-    DATASET_SIZE = 125
+    DATASET_SIZE = 25
     a = tf.abs(output - THRESHOLD_0)
     b = tf.abs(output - THRESHOLD_128)
     c = tf.abs(output - THRESHOLD_192)

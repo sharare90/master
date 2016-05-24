@@ -65,11 +65,14 @@ class NeuralNetwork(Model):
         for iteration in xrange(iteration_number):
             print 'iteration number: %d' % iteration
             images, labels = dataset.next_batch()
+            labels = self.one_hot_presentation(labels)
             self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
 
     def test(self, imgs):
         output = self.layers[-1].output
-        return self.sess.run(output, feed_dict={self.layers[0].input: imgs})
+        reshaped_output = tf.reshape(output, shape=[imgs.shape[0], 256 * 256, 4])
+        maximized_output = tf.arg_max(reshaped_output, 2)
+        return self.sess.run(maximized_output, feed_dict={self.layers[0].input: imgs})
 
     def create_initial_weights(self):
         weights = []
@@ -86,6 +89,8 @@ class NeuralNetwork(Model):
             bias_weights.append(weights)
         return bias_weights
 
+    def one_hot_presentation(self, labels):
+        return np.eye(4)[[labels]].reshape(labels.shape[0], 65536 * 4)
 
 class RestrictedBoltzmanMachine(NeuralNetwork):
     """ represents a sigmoidal rbm """
