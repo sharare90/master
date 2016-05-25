@@ -5,17 +5,17 @@ from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 from display import display
 
 from read_data import get_file
-from settings import width, height
+from settings import width, height, width_start, width_end, height_start, height_end
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
-IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 20
-layers = [height * width, 100, 256 * 256 * 4]
-learning_rate = 0.6
-iteration_number = 1
+IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 910
+layers = [height * width, 400, height * width * 4]
+learning_rate = 0.1
+iteration_number = 50
 
-nn = NeuralNetwork(layers, learning_rate)
-# nn = DeepBeliefNetwork(layers, learning_rate)
+# nn = NeuralNetwork(layers, learning_rate)
+nn = DeepBeliefNetwork(layers, learning_rate)
 nn.train(ibsr.train_set, iteration_number)
 print 'checked'
 
@@ -25,7 +25,14 @@ print 'accuracy: %0.4f' % accuracy
 
 from settings import THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, THRESHOLD_0
 import numpy
-img, lbl = get_file(11)
+img, lbl = get_file(910)
+
+img = img.reshape(256, 256)
+img = img[height_start:height_end, width_start:width_end]
+img = img.reshape(height * width,)
+lbl = lbl.reshape(256, 256)
+lbl = lbl[height_start:height_end, width_start:width_end]
+lbl = lbl.reshape(height * width,)
 img = img.reshape(1, img.size)
 guess = nn.test(img)
 a = abs(guess - THRESHOLD_0)
@@ -34,10 +41,10 @@ c = abs(guess - THRESHOLD_192)
 d = abs(guess - THRESHOLD_254)
 distances = numpy.concatenate([a, b, c, d], 0)
 min_distance = numpy.argmin(distances, 0)
-min_distance = min_distance.reshape([1, 256 * 256])
+min_distance = min_distance.reshape([1, height * width])
 guess[numpy.where(min_distance == 0)] = 0
 guess[numpy.where(min_distance == 1)] = 128
 guess[numpy.where(min_distance == 2)] = 192
 guess[numpy.where(min_distance == 3)] = 254
 
-display(guess.reshape(256, 256), guess=guess.reshape(256, 256), label=lbl.reshape(256, 256))
+display(img.reshape(height, width), guess=guess.reshape(height, width), label=guess.reshape(height, width))

@@ -55,12 +55,15 @@ convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 
 imgs = []
 labels = []
-for i in xrange(1126):
+for i in xrange(926):
     print i
     img, lbl = read_data.get_file(i + 1, column_format=True)
     img = img.reshape(256, 256)
     img = img[height_start:height_end, width_start:width_end]
     img = img.reshape(height * width,)
+    lbl = lbl.reshape(256, 256)
+    lbl = lbl[height_start:height_end, width_start:width_end]
+    lbl = lbl.reshape(height * width,)
     max_img = numpy.max(img)
     min_img = numpy.min(img)
     if i == 896:
@@ -72,5 +75,5 @@ for i in xrange(1126):
     labels.append(lbl)
 
 
-train_set = DataSet(imgs[:1000], labels[:1000], 40, dtype=tf.float32)
-test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 125, dtype=tf.float32)
+train_set = DataSet(imgs[:900], labels[:900], 40, dtype=tf.float32)
+test_set = DataSet(imgs[900 + 1:], labels[900 + 1:], 25, dtype=tf.float32)

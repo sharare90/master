@@ -21,8 +21,8 @@ class SimpleEvaluation(Evaluation):
         sess = tf.Session()
         images, labels = dataset.next_batch()
         outputs = self.model.test(images)
-        guess = tf.placeholder(tf.float32, [None, 256 * 256])
-        tf_labels = tf.placeholder(tf.float32, [None, 256 * 256])
+        guess = tf.placeholder(tf.float32, [None, height * width])
+        tf_labels = tf.placeholder(tf.float32, [None, height * width])
         # guess = get_index_of_thresholds(_outputs)
         # tf_labels = get_index_of_thresholds(_labels)
 

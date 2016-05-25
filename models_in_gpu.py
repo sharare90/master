@@ -70,7 +70,7 @@ class NeuralNetwork(Model):
 
     def test(self, imgs):
         output = self.layers[-1].output
-        reshaped_output = tf.reshape(output, shape=[imgs.shape[0], 256 * 256, 4])
+        reshaped_output = tf.reshape(output, shape=[imgs.shape[0], height * width, 4])
         maximized_output = tf.arg_max(reshaped_output, 2)
         return self.sess.run(maximized_output, feed_dict={self.layers[0].input: imgs})
 
@@ -90,7 +90,7 @@ class NeuralNetwork(Model):
         return bias_weights
 
     def one_hot_presentation(self, labels):
-        return np.eye(4)[[labels]].reshape(labels.shape[0], 65536 * 4)
+        return np.eye(4)[[labels]].reshape(labels.shape[0], height * width * 4)
 
 class RestrictedBoltzmanMachine(NeuralNetwork):
     """ represents a sigmoidal rbm """

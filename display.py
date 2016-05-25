@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from read_data import get_file
 
 import numpy as np
-
-IMAGE_NUMBER_TO_DISPLAY = 896
+from settings import height, width, height_start, height_end, width_start, width_end
+IMAGE_NUMBER_TO_DISPLAY = 11
 
 
 def display(image, guess=None, label=None):
@@ -19,12 +19,12 @@ def display(image, guess=None, label=None):
     If label value is 254 the pixel will be blue.
     """
     if label is not None:
-        im = np.zeros([256, 256, 3])
+        im = np.zeros([height, width, 3])
         im[:, :, 0] = image[:, :]
         im[:, :, 1] = image[:, :]
         im[:, :, 2] = image[:, :]
-        for i in range(256):
-            for j in range(256):
+        for i in range(height):
+            for j in range(width):
                 if label[i, j] == 128:
                     im[i, j, 0] = 1
                 elif label[i, j] == 192:
@@ -41,4 +41,10 @@ def display(image, guess=None, label=None):
 
 if __name__ == '__main__':
     img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY)
-    display(lbl.reshape([256, 256]), guess=lbl.reshape(256, 256), label=lbl.reshape(256, 256))
+    img = img.reshape(256, 256)
+    img = img[height_start:height_end, width_start:width_end]
+    img = img.reshape(height * width,)
+    lbl = lbl.reshape(256, 256)
+    lbl = lbl[height_start:height_end, width_start:width_end]
+    lbl = lbl.reshape(height * width,)
+    display(img.reshape([height, width]), guess=lbl.reshape(height, width), label=lbl.reshape(height, width))
