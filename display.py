@@ -9,7 +9,6 @@ import numpy as np
 from settings import height, width, height_start, height_end, width_start, width_end
 IMAGE_NUMBER_TO_DISPLAY = 11
 
-
 def display(image, guess=None, label=None):
     """ This function displays the image with its label.
     inputs: image, write_to_file=False, label=None

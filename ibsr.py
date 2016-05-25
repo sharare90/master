@@ -55,6 +55,7 @@ convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 
 imgs = []
 labels = []
+import math
 for i in xrange(926):
     print i
     img, lbl = read_data.get_file(i + 1, column_format=True)
@@ -64,6 +65,8 @@ for i in xrange(926):
     lbl = lbl.reshape(256, 256)
     lbl = lbl[height_start:height_end, width_start:width_end]
     lbl = lbl.reshape(height * width,)
+    var_img = img.var()
+    img = numpy.multiply(1/(2*math.pi*var_img), numpy.exp(-(img*img)/(2*var_img)))
     max_img = numpy.max(img)
     min_img = numpy.min(img)
     if i == 896:
