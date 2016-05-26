@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy
 import read_data
 from settings import THRESHOLD_0, THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, height_start, height_end, width_start, \
-    width_end, height, width
+    width_end, height, width, window_height, window_width
 
 
 class DataSet(object):
@@ -54,12 +54,15 @@ thresholds = {
 def convert_label_to_thresholds(element):
     return thresholds[element]
 
+def get_rectangle(image, start_point):
+    return image[start_point[0]:start_point[0] + window_height, start_point[1]:start_point[1] + window_width]
 
 convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 
 imgs = []
 labels = []
-
+parts_of_img = []
+parts_of_lbl = []
 from scipy.ndimage.filters import gaussian_filter
 
 for i in xrange(1126):
@@ -69,12 +72,28 @@ for i in xrange(1126):
     img = img[height_start:height_end, width_start:width_end]
     lbl = lbl.reshape(256, 256)
     lbl = lbl[height_start:height_end, width_start:width_end]
+    for j in xrange(10):
+        for k in xrange(10):
+            start_point = [window_height * j, window_width * k]
+            part_of_img = get_rectangle(img, start_point)
+            part_of_lbl = get_rectangle(lbl, start_point)
+            part_of_img = part_of_img.reshape(window_height * window_width, )
+            part_of_lbl = part_of_lbl.reshape(window_height * window_width, )
+            max_part_of_img = numpy.max(part_of_img)
+            min_part_of_img = numpy.min(part_of_img)
+            if i == 896:
+                max_img = 12
+            part_of_img = numpy.multiply(part_of_img - min_part_of_img, 1.0 / float(max_part_of_img - min_part_of_img))
+            part_of_lbl = part_of_lbl.astype('float')
+            part_of_lbl = convert_label_to_thresholds(part_of_lbl)
+            parts_of_img.append(part_of_img)
+            parts_of_lbl.append(part_of_lbl)
     img = img.reshape(height * width, )
     lbl = lbl.reshape(height * width, )
-    img = gaussian_filter(img, sigma=7)
+    # img = gaussian_filter(img, sigma=7)
     max_img = numpy.max(img)
     min_img = numpy.min(img)
-    if max_img == 0:
+    if i == 896:
         max_img = 12
     img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
     lbl = lbl.astype('float')
@@ -83,5 +102,7 @@ for i in xrange(1126):
     labels.append(lbl)
 
 
-train_set = DataSet(imgs[:1000], labels[:1000], 40, dtype=tf.float32)
-test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 25, dtype=tf.float32)
+# train_set = DataSet(imgs[:1000], labels[:1000], 40, dtype=tf.float32)
+# test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 25, dtype=tf.float32)
+train_set = DataSet(parts_of_img[:110000], parts_of_lbl[:110000], 40, dtype=tf.float32)
+test_set = DataSet(parts_of_img[110000 + 1:], parts_of_lbl[110000 + 1:], 25, dtype=tf.float32)

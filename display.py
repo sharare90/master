@@ -7,7 +7,7 @@ from read_data import get_file
 
 import numpy as np
 from settings import height, width, height_start, height_end, width_start, width_end
-IMAGE_NUMBER_TO_DISPLAY = 11
+IMAGE_NUMBER_TO_DISPLAY = 234
 
 def display(image, guess=None, label=None):
     """ This function displays the image with its label.
@@ -46,4 +46,5 @@ if __name__ == '__main__':
     lbl = lbl.reshape(256, 256)
     lbl = lbl[height_start:height_end, width_start:width_end]
     lbl = lbl.reshape(height * width,)
+    img[(np.where(img > 30)) and (np.where(lbl == 0))] = 0
     display(img.reshape([height, width]), guess=lbl.reshape(height, width), label=lbl.reshape(height, width))

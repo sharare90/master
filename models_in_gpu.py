@@ -100,16 +100,22 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
             self.weights = tf.Variable(
                 tf.truncated_normal([input_size, output_size],
                                     stddev=1.0 / math.sqrt(float(input_size))), name="weights")
-            self.v_bias = tf.Variable(tf.zeros([input_size]), name="v_bias")
-            self.h_bias = tf.Variable(tf.zeros([output_size]), name="h_bias")
+            # self.v_bias = tf.Variable(tf.zeros([input_size]), name="v_bias")
+            # self.h_bias = tf.Variable(tf.zeros([output_size]), name="h_bias")
+            self.v_bias = tf.Variable(
+                tf.truncated_normal([input_size],
+                                    stddev=1.0 / math.sqrt(float(input_size))), name="v_bias")
+            self.h_bias = tf.Variable(
+                tf.truncated_normal([output_size],
+                                    stddev=1.0 / math.sqrt(float(input_size))), name="h_bias")
 
     def propup(self, visible):
         """ P(h|v) """
-        return tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
+        return -1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
 
     def propdown(self, hidden):
         """ P(v|h) """
-        return tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
+        return -1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
 
     def sample_h_given_v(self, v_sample):
         """ Generate a sample from the hidden layer """

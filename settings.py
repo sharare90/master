@@ -18,3 +18,7 @@ width_start = 50
 width_end = 200
 height = 120
 width = 150
+
+window_height = 12
+window_width = 15
+

@@ -9,8 +9,8 @@ from settings import width, height, width_start, width_end, height_start, height
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
-IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 910
-layers = [height * width, 400, height * width * 4]
+IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 1110
+layers = [height * width, 500, height * width * 4]
 learning_rate = 0.1
 iteration_number = 50
 
@@ -25,8 +25,7 @@ print 'accuracy: %0.4f' % accuracy
 
 from settings import THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, THRESHOLD_0
 import numpy
-img, lbl = get_file(910)
-
+img, lbl = get_file(1110)
 img = img.reshape(256, 256)
 img = img[height_start:height_end, width_start:width_end]
 img = img.reshape(height * width,)
