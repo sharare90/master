@@ -10,9 +10,9 @@ from settings import width, height, width_start, width_end, height_start, height
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 1110
-layers = [height * width, 500, height * width * 4]
-learning_rate = 0.1
-iteration_number = 50
+layers = [height * width, 512, 256, height * width * 4]
+learning_rate = 0.001
+iteration_number = 15
 
 # nn = NeuralNetwork(layers, learning_rate)
 nn = DeepBeliefNetwork(layers, learning_rate)

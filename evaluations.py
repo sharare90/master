@@ -46,8 +46,8 @@ class SimpleEvaluation(Evaluation):
         accuracy_192 = correct_192 / tf.reduce_sum(threshold_192)
         accuracy_254 = correct_254 / tf.reduce_sum(threshold_254)
 
-        accuracy = (correct_128 + correct_192 + correct_254) / (tf.reduce_sum(threshold_128) + tf.reduce_sum(
-            threshold_192) + tf.reduce_sum(threshold_254))
+        accuracy = (correct_128 + correct_192 + correct_254 + correct_0) / (tf.reduce_sum(threshold_128) + tf.reduce_sum(
+            threshold_192) + tf.reduce_sum(threshold_254) + tf.reduce_sum(threshold_0))
 
         print "0 accuracy: %0.4f" % sess.run(accuracy_0, feed_dict={tf_labels: labels, guess: outputs})
         print "128 accuracy: %0.4f" % sess.run(accuracy_128, feed_dict={tf_labels: labels, guess: outputs})
