@@ -1,3 +1,5 @@
+import cv2
+from skimage.filters import gaussian_filter
 import tensorflow as tf
 import numpy
 import read_data
@@ -14,6 +16,14 @@ class DataSet(object):
             # Convert from [0, 255] -> [0.0, 1.0].
             images = numpy.multiply(images, 1.0 / 1.0)
             labels = numpy.multiply(labels, 1)
+
+            # labels[numpy.where(labels == 1)] = 0
+            # labels[numpy.where(labels == 2)] = 0
+            # labels[numpy.where(labels == 3)] = 1
+
+            # labels[numpy.where(labels == 1)] = 1
+            # labels[numpy.where(labels > 0)] = 1
+
             self.sample_numbers = sample_numbers
             self.batch_size = batch_size
             self._images = images
@@ -60,23 +70,26 @@ convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 imgs = []
 labels = []
 
-from scipy.ndimage.filters import gaussian_filter
 
 for i in xrange(1126):
     print i
     img, lbl = read_data.get_file(i + 1, column_format=True)
+    # img = lbl.copy()
     img = img.reshape(256, 256)
     img = img[height_start:height_end, width_start:width_end]
     lbl = lbl.reshape(256, 256)
     lbl = lbl[height_start:height_end, width_start:width_end]
-    img = img.reshape(height * width, )
-    lbl = lbl.reshape(height * width, )
-    img = gaussian_filter(img, sigma=7)
+
+    # img = gaussian_filter(img, sigma=0.001)
+    # img = cv2.GaussianBlur(img, (5, 5), 0)
     max_img = numpy.max(img)
     min_img = numpy.min(img)
-    if max_img == 0:
+    if max_img - min_img == 0:
         max_img = 12
+        min_img = 0
     img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
+    img = img.reshape(height * width, )
+    lbl = lbl.reshape(height * width, )
     lbl = lbl.astype('float')
     lbl = convert_label_to_thresholds(lbl)
     imgs.append(img)
@@ -85,3 +98,4 @@ for i in xrange(1126):
 
 train_set = DataSet(imgs[:1000], labels[:1000], 40, dtype=tf.float32)
 test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 25, dtype=tf.float32)
+# test_set = train_set
