@@ -34,4 +34,4 @@ NUMBER_OF_CLASSES = 4
 USE_PCA = False
 PCA_COMPONENTS_COUNT = 150
 
-weight_loss_coefficient = 0.1
+weight_loss_coefficient = 0.0

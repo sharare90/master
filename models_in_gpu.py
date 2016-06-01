@@ -59,7 +59,7 @@ class NeuralNetwork(Model):
             self.layers[i + 1].output = tf.nn.softmax(self.layers[i + 1].input)
         # loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
         # loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
-        # loss_function = tf.sqrt(tf.reduce_sum(tf.square(y_ - self.layers[-1].output)))
+        # loss_function = -tf.sqrt(tf.reduce_sum(tf.square(y_ - self.layers[-1].output)))
 
         loss_function = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
         loss_function *= (1 - weight_loss_coefficient)
@@ -70,14 +70,16 @@ class NeuralNetwork(Model):
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
 
+        previous_weights = None
         for iteration in xrange(iteration_number):
             print 'iteration number: %d' % iteration
             images, labels = dataset.next_batch()
             labels = self.one_hot_presentation(labels)
-            print self.sess.run(self.weights[0][0, 0]),
-            print self.sess.run(self.weights[1][0, 0]),
-            print self.sess.run(self.weights[2][0, 0])
+            previous_weights = self.sess.run(self.weights)
             self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
+            print np.max(self.sess.run(self.weights[0]) - previous_weights[0]),
+            print np.max(self.sess.run(self.weights[1]) - previous_weights[1]),
+            print np.max(self.sess.run(self.weights[2]) - previous_weights[2])
 
     def test(self, imgs):
         output = self.layers[-1].output

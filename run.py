@@ -14,11 +14,11 @@ IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 1002
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
 
 layers = [first_layer, 512, 256, height * width * 4]
-learning_rate = 0.001
-iteration_number = 10
+learning_rate = 0.01
+iteration_number = 100
 
-# nn = NeuralNetwork(layers, learning_rate)
-nn = DeepBeliefNetwork(layers, learning_rate)
+nn = NeuralNetwork(layers, learning_rate)
+# nn = DeepBeliefNetwork(layers, learning_rate)
 nn.train(ibsr.train_set, iteration_number)
 print 'checked'
 
