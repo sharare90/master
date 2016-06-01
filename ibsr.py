@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy
 import read_data
 from settings import THRESHOLD_0, THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, height_start, height_end, width_start, \
-    width_end, height, width
+    width_end, height, width, PCA_COMPONENTS_COUNT, USE_PCA
 
 
 class DataSet(object):
@@ -93,25 +93,22 @@ for i in xrange(1126):
     lbl = convert_label_to_thresholds(lbl)
     imgs.append(img)
     labels.append(lbl)
-a = imgs[:1000]
-a = numpy.multiply(a, 1)
-transposed_train_image = a.transpose()
-b = imgs[1000:]
-b = numpy.multiply(b, 1)
-transposed_test_image = b.transpose()
-kpca = KernelPCA(kernel="rbf", fit_inverse_transform=True, gamma=10)
-X_kpca = kpca.fit_transform(transposed_train_image)
-X_back = kpca.inverse_transform(X_kpca)
-pca = PCA()
-X_pca = pca.fit_transform(transposed_train_image)
-pca_train_imgs = numpy.multiply(X_pca, 1)
-pca_train_imgs = pca_train_imgs.transpose()
-pca_test_imgs = numpy.matmul(b, X_kpca)
+
+train_test_separator = 1000
+
+train_imgs = imgs[:train_test_separator]
+train_imgs = numpy.multiply(train_imgs, 1)
+
+test_imgs = imgs[train_test_separator:]
+test_imgs = numpy.multiply(test_imgs, 1)
+
+pca = None
+if USE_PCA:
+    pca = PCA(n_components=PCA_COMPONENTS_COUNT)
+    pca.fit(train_imgs)
+    train_imgs = pca.transform(train_imgs)
+    test_imgs = pca.transform(test_imgs)
 
 
-
-train_set = DataSet(pca_train_imgs[:400], labels[:400], 40, dtype=tf.float32)
-test_set = DataSet(pca_test_imgs[100 + 1:], labels[100 + 1:], 25, dtype=tf.float32)
-# train_set = DataSet(imgs[:200], labels[:200], 40, dtype=tf.float32)
-# test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 25, dtype=tf.float32)
-# test_set = train_set
+train_set = DataSet(train_imgs, labels[:train_test_separator], 40, dtype=tf.float32)
+test_set = DataSet(test_imgs, labels[train_test_separator + 1:], 25, dtype=tf.float32)

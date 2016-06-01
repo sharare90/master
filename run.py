@@ -5,14 +5,17 @@ from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 from display import display
 
 from read_data import get_file
-from settings import width, height, width_start, width_end, height_start, height_end
+from settings import width, height, width_start, width_end, height_start, height_end, USE_PCA, PCA_COMPONENTS_COUNT
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 1002
-layers = [height * width, 512, 256, height * width * 4]
+
+first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
+
+layers = [first_layer, 512, 256, height * width * 4]
 learning_rate = 0.001
-iteration_number = 1000
+iteration_number = 10
 
 # nn = NeuralNetwork(layers, learning_rate)
 nn = DeepBeliefNetwork(layers, learning_rate)
@@ -25,15 +28,23 @@ print 'accuracy: %0.4f' % accuracy
 
 from settings import THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, THRESHOLD_0
 import numpy
-img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION)
-img = img.reshape(256, 256)
-img = img[height_start:height_end, width_start:width_end]
-img = img.reshape(height * width,)
-lbl = lbl.reshape(256, 256)
-lbl = lbl[height_start:height_end, width_start:width_end]
-lbl = lbl.reshape(height * width,)
-img = img.reshape(1, img.size)
-guess = nn.test(img)
+
+if USE_PCA:
+    img, lbl = ibsr.test_set.next_batch()
+    img = img[0].reshape(1, PCA_COMPONENTS_COUNT)
+    from ibsr import pca
+    guess = nn.test(img)
+    img = pca.inverse_transform(img)
+else:
+    img, lbl = get_file(IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION)
+    img = img.reshape(256, 256)
+    img = img[height_start:height_end, width_start:width_end]
+    img = img.reshape(height * width, )
+    lbl = lbl.reshape(256, 256)
+    lbl = lbl[height_start:height_end, width_start:width_end]
+    lbl = lbl.reshape(height * width, )
+    img = img.reshape(1, img.size)
+    guess = nn.test(img)
 a = abs(guess - THRESHOLD_0)
 b = abs(guess - THRESHOLD_128)
 c = abs(guess - THRESHOLD_192)

@@ -30,3 +30,6 @@ window_height = 12
 window_width = 15
 
 NUMBER_OF_CLASSES = 4
+
+USE_PCA = True
+PCA_COMPONENTS_COUNT = 150
