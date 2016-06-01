@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from utils import sigmoid, sigmoid_derivative, create_random_weights, maximization
-from settings import height, width, NUMBER_OF_CLASSES
+from settings import height, width, NUMBER_OF_CLASSES, weights_loss_function
 
 __author__ = 'sharare'
 
@@ -61,7 +61,10 @@ class NeuralNetwork(Model):
         # loss_function = -tf.reduce_mean(y_ * tf.log(self.layers[-1].output))
         # loss_function = tf.sqrt(tf.reduce_mean(tf.square(y_ - self.layers[-1].output)))
 
-        loss_function = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
+        loss_function = -tf.reduce_mean(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
+        l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in tf.trainable_variables()])
+        loss_function = loss_function + weights_loss_function * l2_loss
+
         train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(loss_function)
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
