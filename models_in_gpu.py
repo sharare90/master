@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from utils import sigmoid, sigmoid_derivative, create_random_weights, maximization
-from settings import height, width, NUMBER_OF_CLASSES, weights_loss_function
+from settings import height, width, NUMBER_OF_CLASSES, weight_loss_coefficient
 
 __author__ = 'sharare'
 
@@ -58,12 +58,13 @@ class NeuralNetwork(Model):
             self.layers[i + 1].input = tf.matmul(self.layers[i].output, self.weights[i]) + self.bias[i]
             self.layers[i + 1].output = tf.nn.softmax(self.layers[i + 1].input)
         # loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
-        # loss_function = -tf.reduce_mean(y_ * tf.log(self.layers[-1].output))
-        # loss_function = tf.sqrt(tf.reduce_mean(tf.square(y_ - self.layers[-1].output)))
+        # loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
+        # loss_function = tf.sqrt(tf.reduce_sum(tf.square(y_ - self.layers[-1].output)))
 
-        loss_function = -tf.reduce_mean(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
+        loss_function = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
+        loss_function *= (1 - weight_loss_coefficient)
         l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in tf.trainable_variables()])
-        loss_function = loss_function + weights_loss_function * l2_loss
+        loss_function += weight_loss_coefficient * l2_loss
 
         train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(loss_function)
         self.sess = tf.Session()
@@ -73,7 +74,9 @@ class NeuralNetwork(Model):
             print 'iteration number: %d' % iteration
             images, labels = dataset.next_batch()
             labels = self.one_hot_presentation(labels)
-            self.sess.run(self.weights)
+            print self.sess.run(self.weights[0][0, 0]),
+            print self.sess.run(self.weights[1][0, 0]),
+            print self.sess.run(self.weights[2][0, 0])
             self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
 
     def test(self, imgs):
