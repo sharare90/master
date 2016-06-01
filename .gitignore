@@ -6,3 +6,4 @@ meta/
 *~
 TestSetHW1/
 TrainSetHW1/
+.fuse*
