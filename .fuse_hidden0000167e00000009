@@ -93,25 +93,22 @@ for i in xrange(1126):
     lbl = convert_label_to_thresholds(lbl)
     imgs.append(img)
     labels.append(lbl)
-a = imgs[:1000]
+a = imgs[:100]
 a = numpy.multiply(a, 1)
 transposed_train_image = a.transpose()
-b = imgs[1000:]
+b = imgs[100:200]
 b = numpy.multiply(b, 1)
 transposed_test_image = b.transpose()
 kpca = KernelPCA(kernel="rbf", fit_inverse_transform=True, gamma=10)
-X_kpca = kpca.fit_transform(transposed_train_image)
+X_kpca = kpca.fit_transform(a)
 X_back = kpca.inverse_transform(X_kpca)
 pca = PCA()
-X_pca = pca.fit_transform(transposed_train_image)
-pca_train_imgs = numpy.multiply(X_pca, 1)
-pca_train_imgs = pca_train_imgs.transpose()
-pca_test_imgs = numpy.matmul(b, X_kpca)
+X_pca = pca.fit_transform(a)
+pca_train_imgs = numpy.matmul(a, X_pca)
+pca_test_imgs = numpy.matmul(b, X_pca)
 
 
 
-train_set = DataSet(pca_train_imgs[:400], labels[:400], 40, dtype=tf.float32)
-test_set = DataSet(pca_test_imgs[100 + 1:], labels[100 + 1:], 25, dtype=tf.float32)
-# train_set = DataSet(imgs[:200], labels[:200], 40, dtype=tf.float32)
-# test_set = DataSet(imgs[1000 + 1:], labels[1000 + 1:], 25, dtype=tf.float32)
+train_set = DataSet(pca_train_imgs[:100], labels[:100], 40, dtype=tf.float32)
+test_set = DataSet(pca_test_imgs[100 + 1:200], labels[100 + 1:200], 25, dtype=tf.float32)
 # test_set = train_set

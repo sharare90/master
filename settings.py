@@ -19,12 +19,12 @@ THRESHOLD_0 = 0
 # height = 120
 # width = 150
 
-height_start = 0
-height_end = 255
-width_start = 0
-width_end = 255
-height = 255
-width = 255
+height_start = 60
+height_end = 120
+width_start = 60
+width_end = 120
+height = 60
+width = 60
 
 window_height = 12
 window_width = 15

@@ -10,12 +10,12 @@ from settings import width, height, width_start, width_end, height_start, height
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 1002
-layers = [height * width, 256, 256, height * width * 4]
+layers = [height * width, 512, 256, height * width * 4]
 learning_rate = 0.001
-iteration_number = 15
+iteration_number = 1000
 
-nn = NeuralNetwork(layers, learning_rate)
-# nn = DeepBeliefNetwork(layers, learning_rate)
+# nn = NeuralNetwork(layers, learning_rate)
+nn = DeepBeliefNetwork(layers, learning_rate)
 nn.train(ibsr.train_set, iteration_number)
 print 'checked'
 

@@ -1,4 +1,3 @@
-import pycuda.driver as cuda
 import tensorflow as tf
 import math
 
@@ -59,14 +58,19 @@ class NeuralNetwork(Model):
             self.layers[i + 1].input = tf.matmul(self.layers[i].output, self.weights[i]) + self.bias[i]
             self.layers[i + 1].output = tf.nn.softmax(self.layers[i + 1].input)
         # loss_function = -tf.reduce_sum(y_ * tf.log(self.layers[-1].output))
+        # loss_function = -tf.reduce_mean(y_ * tf.log(self.layers[-1].output))
+        # loss_function = tf.sqrt(tf.reduce_mean(tf.square(y_ - self.layers[-1].output)))
+
         loss_function = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(self.layers[-1].output, 1e-10, 1.0)))
         train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(loss_function)
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
+
         for iteration in xrange(iteration_number):
             print 'iteration number: %d' % iteration
             images, labels = dataset.next_batch()
             labels = self.one_hot_presentation(labels)
+            self.sess.run(self.weights)
             self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
 
     def test(self, imgs):
@@ -103,7 +107,7 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
         with tf.name_scope("rbm_" + name):
             self.weights = tf.Variable(
                 tf.truncated_normal([input_size, output_size],
-                                    stddev=10.0 / math.sqrt(float(input_size))), name="weights")
+                                    stddev=1.0 / math.sqrt(float(input_size))), name="weights")
             # self.weights = tf.Variable(tf.zeros([input_size, output_size]), name="weights")
 
             self.v_bias = tf.Variable(tf.zeros([input_size]), name="v_bias")
@@ -145,7 +149,7 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
         v_sample = self.sample_v_given_h(h_sample)
         return [h_sample, v_sample]
 
-    def cd1(self, visibles, learning_rate=0.005, rbm_gibbs_k=15):
+    def cd1(self, visibles, learning_rate=0.005, rbm_gibbs_k=1):
         " One step of contrastive divergence, with Rao-Blackwellization "
         error = self.reconstruction_error(visibles)
         hidden = self.propup(visibles)
