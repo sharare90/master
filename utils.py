@@ -1,4 +1,5 @@
 from math import e
+import math
 
 import tensorflow as tf
 
@@ -27,8 +28,9 @@ def sigmoid_derivative(num, output_polarization=True):
 
 def create_random_weights(n, m):
     if m == 1:
-        return tf.Variable(tf.zeros([n]))
-    return tf.Variable(tf.zeros([n, m]))
+        return tf.Variable(tf.truncated_normal([n], stddev=1.0 / math.sqrt(float(n))))
+    return tf.Variable(tf.truncated_normal([n, m], stddev=1.0 / math.sqrt(float(n))))
+
 
 def similarity(guess_label, label, consider_black_points=True):
     counter = 0
@@ -65,6 +67,7 @@ def maximization(output):
             output[4 * i + j] = -1
         output[4 * i + max_index] = 1
     return output
+
 
 # def maximization(output):
 #     max_val = -2

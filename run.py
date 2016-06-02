@@ -9,16 +9,16 @@ from settings import width, height, width_start, width_end, height_start, height
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
-IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 1002
+IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 35
 
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
 
 layers = [first_layer, 512, 256, height * width * 4]
-learning_rate = 0.01
-iteration_number = 100
+learning_rate = 0.001
+iteration_number = 10
 
-nn = NeuralNetwork(layers, learning_rate)
-# nn = DeepBeliefNetwork(layers, learning_rate)
+# nn = NeuralNetwork(layers, learning_rate)
+nn = DeepBeliefNetwork(layers, learning_rate)
 nn.train(ibsr.train_set, iteration_number)
 print 'checked'
 

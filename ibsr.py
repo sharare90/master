@@ -81,12 +81,12 @@ for i in xrange(1126):
 
     # img = gaussian_filter(img, sigma=0.001)
     # img = cv2.GaussianBlur(img, (5, 5), 0)
-    max_img = numpy.max(img)
-    min_img = numpy.min(img)
-    if max_img - min_img == 0:
-        max_img = 12
-        min_img = 0
-    img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
+    # max_img = numpy.max(img)
+    # min_img = numpy.min(img)
+    # if max_img - min_img == 0:
+    #     max_img = 12
+    #     min_img = 0
+    # img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
     img = img.reshape(height * width, )
     lbl = lbl.reshape(height * width, )
     lbl = lbl.astype('float')
