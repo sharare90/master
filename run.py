@@ -5,7 +5,7 @@ from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 from display import display
 
 from read_data import get_file
-from settings import width, height, width_start, width_end, height_start, height_end, USE_PCA, PCA_COMPONENTS_COUNT
+from settings import width, height, width_start, width_end, height_start, height_end, USE_PCA, PCA_COMPONENTS_COUNT, NUMBER_OF_CLASSES
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
@@ -13,8 +13,8 @@ IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 35
 
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
 
-layers = [first_layer, 512, 256, height * width * 4]
-learning_rate = 0.001
+layers = [first_layer, 512, 256, height * width * NUMBER_OF_CLASSES]
+learning_rate = 0.65
 iteration_number = 1000
 
 # nn = NeuralNetwork(layers, learning_rate)
