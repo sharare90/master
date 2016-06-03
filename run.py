@@ -15,7 +15,7 @@ first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
 
 layers = [first_layer, 512, 256, height * width * 4]
 learning_rate = 0.001
-iteration_number = 10
+iteration_number = 1000
 
 # nn = NeuralNetwork(layers, learning_rate)
 nn = DeepBeliefNetwork(layers, learning_rate)

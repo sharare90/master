@@ -13,7 +13,7 @@ class DataSet(object):
 
         if dtype == tf.float32:
             # Convert from [0, 255] -> [0.0, 1.0].
-            images = numpy.multiply(images, 1.0 / 1.0)
+            images = numpy.multiply(images, 1.0 / 256.0)
             labels = numpy.multiply(labels, 1)
 
             # labels[numpy.where(labels == 1)] = 0
@@ -110,5 +110,5 @@ if USE_PCA:
     test_imgs = pca.transform(test_imgs)
 
 
-train_set = DataSet(train_imgs, labels[:train_test_separator], 40, dtype=tf.float32)
+train_set = DataSet(train_imgs, labels[:train_test_separator], 20, dtype=tf.float32)
 test_set = DataSet(test_imgs, labels[train_test_separator + 1:], 25, dtype=tf.float32)

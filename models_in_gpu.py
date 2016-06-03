@@ -52,6 +52,7 @@ class NeuralNetwork(Model):
 
     def train(self, dataset, iteration_number):
         y_ = tf.placeholder(tf.float32, [None, self.layers_size[-1]])
+        epoc_learning_rate = tf.placeholder(tf.float32)
         self.layers[0].input = tf.placeholder(tf.float32, [None, self.layers_size[0]])
         self.layers[0].output = self.layers[0].input
         for i in xrange(len(self.layers) - 1):
@@ -68,7 +69,7 @@ class NeuralNetwork(Model):
         l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in tf.trainable_variables()])
         loss_function += weight_loss_coefficient * l2_loss
 
-        train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(loss_function)
+        train_step = tf.train.GradientDescentOptimizer(epoc_learning_rate).minimize(loss_function)
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
 
@@ -78,7 +79,9 @@ class NeuralNetwork(Model):
             images, labels = dataset.next_batch()
             labels = self.one_hot_presentation(labels)
             previous_weights = self.sess.run(self.weights)
-            self.sess.run(train_step, feed_dict={self.layers[0].input: images, y_: labels})
+            self.sess.run(train_step,
+                          feed_dict={self.layers[0].input: images, y_: labels,
+                                     epoc_learning_rate: self.learning_rate / (1 + iteration)})
             print np.max(self.sess.run(self.weights[0]) - previous_weights[0]),
             print np.max(self.sess.run(self.weights[1]) - previous_weights[1]),
             print np.max(self.sess.run(self.weights[2]) - previous_weights[2])
@@ -118,26 +121,26 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
         with tf.name_scope("rbm_" + name):
             self.weights = tf.Variable(
                 tf.truncated_normal([input_size, output_size],
-                                    stddev=1.0 / math.sqrt(float(input_size))), name="weights")
+                                    stddev=0.1 / math.sqrt(float(input_size))), name="weights")
             # self.weights = tf.Variable(tf.zeros([input_size, output_size]), name="weights")
 
-            self.v_bias = tf.Variable(tf.ones([input_size]), name="v_bias")
-            self.h_bias = tf.Variable(tf.ones([output_size]), name="h_bias")
-            # self.v_bias = tf.Variable(
-            #     tf.truncated_normal([input_size],
-            #                         stddev=1.0 / math.sqrt(float(input_size))), name="v_bias")
-            # self.h_bias = tf.Variable(
-            #     tf.truncated_normal([output_size],
-            #                         stddev=1.0 / math.sqrt(float(input_size))), name="h_bias")
+            # self.v_bias = tf.Variable(tf.ones([input_size]), name="v_bias")
+            # self.h_bias = tf.Variable(tf.ones([output_size]), name="h_bias")
+            self.v_bias = tf.Variable(
+                tf.truncated_normal([input_size],
+                                    stddev=0.1 / math.sqrt(float(input_size))), name="v_bias")
+            self.h_bias = tf.Variable(
+                tf.truncated_normal([output_size],
+                                    stddev=0.1 / math.sqrt(float(input_size))), name="h_bias")
 
     def propup(self, visible):
         """ P(h|v) """
-        return tf.nn.softmax(-1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias))
+        return -1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
         # return tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
 
     def propdown(self, hidden):
         """ P(v|h) """
-        return tf.nn.softmax(-1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias))
+        return -1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
         # return tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
 
     def sample_h_given_v(self, v_sample):
