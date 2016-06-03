@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from utils import sigmoid, sigmoid_derivative, create_random_weights, maximization
-from settings import height, width, NUMBER_OF_CLASSES, weight_loss_coefficient
+from settings import height, width, NUMBER_OF_CLASSES, weight_loss_coefficient, window_height, window_width
 
 __author__ = 'sharare'
 
@@ -88,7 +88,7 @@ class NeuralNetwork(Model):
 
     def test(self, imgs):
         output = self.layers[-1].output
-        reshaped_output = tf.reshape(output, shape=[imgs.shape[0], height * width, NUMBER_OF_CLASSES])
+        reshaped_output = tf.reshape(output, shape=[imgs.shape[0], window_height * window_width, NUMBER_OF_CLASSES])
         maximized_output = tf.arg_max(reshaped_output, 2)
         return self.sess.run(maximized_output, feed_dict={self.layers[0].input: imgs})
 
@@ -109,7 +109,7 @@ class NeuralNetwork(Model):
 
     def one_hot_presentation(self, labels):
         one_hot_matrix = np.eye(NUMBER_OF_CLASSES)[[labels]].reshape(labels.shape[0],
-                                                                     height * width * NUMBER_OF_CLASSES)
+                                                                     window_height * window_width * NUMBER_OF_CLASSES)
         # one_hot_matrix[np.where(one_hot_matrix == 0)] = -1
         return one_hot_matrix
 

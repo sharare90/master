@@ -5,15 +5,16 @@ from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 from display import display
 
 from read_data import get_file
-from settings import width, height, width_start, width_end, height_start, height_end, USE_PCA, PCA_COMPONENTS_COUNT, NUMBER_OF_CLASSES
+from settings import width, height, width_start, width_end, height_start, height_end, USE_PCA, PCA_COMPONENTS_COUNT, \
+    NUMBER_OF_CLASSES, window_height, window_width
 
 DISPLAY_NEURAL_NETWORK_SEGMENTATION = True
 
 IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 35
 
-first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
+first_layer = PCA_COMPONENTS_COUNT if USE_PCA else window_height * window_width
 
-layers = [first_layer, 512, 256, height * width * NUMBER_OF_CLASSES]
+layers = [first_layer, 512, 256, window_height * window_width * NUMBER_OF_CLASSES]
 learning_rate = 0.65
 iteration_number = 1000
 
@@ -33,6 +34,7 @@ if USE_PCA:
     img, lbl = ibsr.test_set.next_batch()
     img = img[0].reshape(1, PCA_COMPONENTS_COUNT)
     from ibsr import pca
+
     guess = nn.test(img)
     img = pca.inverse_transform(img)
 else:

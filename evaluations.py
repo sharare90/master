@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
-from settings import THRESHOLD_0, THRESHOLD_254, THRESHOLD_192, THRESHOLD_128, height, width
+from settings import THRESHOLD_0, THRESHOLD_254, THRESHOLD_192, THRESHOLD_128, height, width, window_height, \
+    window_width
 
 import tensorflow as tf
 
@@ -21,7 +22,7 @@ class SimpleEvaluation(Evaluation):
         sess = tf.Session()
         images, labels = dataset.next_batch()
         outputs = self.model.test(images)
-        guess = tf.placeholder(tf.float32, [None, height * width])
+        guess = tf.placeholder(tf.float32, [None, window_height * window_width])
         tf_labels = tf.placeholder(tf.float32, [None, height * width])
         # guess = get_index_of_thresholds(_outputs)
         # tf_labels = get_index_of_thresholds(_labels)

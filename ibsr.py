@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy
 import read_data
 from settings import THRESHOLD_0, THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, height_start, height_end, width_start, \
-    width_end, height, width, PCA_COMPONENTS_COUNT, USE_PCA
+    width_end, height, width, PCA_COMPONENTS_COUNT, USE_PCA, window_height, window_width
 
 
 class DataSet(object):
@@ -59,6 +59,9 @@ thresholds = {
     254: THRESHOLD_254,
 }
 
+def get_rectangle(image, start_point):
+    return image[start_point[0]:start_point[0] + window_height, start_point[1]:start_point[1] + window_width]
+
 
 def convert_label_to_thresholds(element):
     return thresholds[element]
@@ -69,30 +72,30 @@ convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 imgs = []
 labels = []
 
-
 for i in xrange(1126):
     print i
     img, lbl = read_data.get_file(i + 1, column_format=True)
-    # img = lbl.copy()
     img = img.reshape(256, 256)
     img = img[height_start:height_end, width_start:width_end]
     lbl = lbl.reshape(256, 256)
     lbl = lbl[height_start:height_end, width_start:width_end]
-
-    # img = gaussian_filter(img, sigma=0.001)
-    # img = cv2.GaussianBlur(img, (5, 5), 0)
-    # max_img = numpy.max(img)
-    # min_img = numpy.min(img)
-    # if max_img - min_img == 0:
-    #     max_img = 12
-    #     min_img = 0
-    # img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
-    img = img.reshape(height * width, )
-    lbl = lbl.reshape(height * width, )
-    lbl = lbl.astype('float')
-    lbl = convert_label_to_thresholds(lbl)
-    imgs.append(img)
-    labels.append(lbl)
+    for j in xrange(10):
+        for k in xrange(10):
+            start_point = [window_height * j, window_width * k]
+            img = get_rectangle(img, start_point)
+            lbl = get_rectangle(lbl, start_point)
+            img = img.reshape(window_height * window_width, )
+            lbl = lbl.reshape(window_height * window_width, )
+            # max_img = numpy.max(img)
+            # min_img = numpy.min(img)
+            # if max_img - min_img == 0:
+            #     max_img = 100000
+            # img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
+            lbl = lbl.astype('float')
+            lbl = convert_label_to_thresholds(lbl)
+            imgs.append(img)
+            labels.append(lbl)
+    
 
 train_test_separator = 1000
 
