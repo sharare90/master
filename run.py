@@ -15,7 +15,7 @@ IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 35
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else window_height * window_width
 
 layers = [first_layer, 512, 256, window_height * window_width * NUMBER_OF_CLASSES]
-learning_rate = 0.65
+learning_rate = 0.0001
 iteration_number = 1000
 
 # nn = NeuralNetwork(layers, learning_rate)

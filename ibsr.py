@@ -74,16 +74,16 @@ labels = []
 
 for i in xrange(1126):
     print i
-    img, lbl = read_data.get_file(i + 1, column_format=True)
-    img = img.reshape(256, 256)
-    img = img[height_start:height_end, width_start:width_end]
-    lbl = lbl.reshape(256, 256)
-    lbl = lbl[height_start:height_end, width_start:width_end]
+    image, label = read_data.get_file(i + 1, column_format=True)
+    image = image.reshape(256, 256)
+    image = image[height_start:height_end, width_start:width_end]
+    label = label.reshape(256, 256)
+    label = label[height_start:height_end, width_start:width_end]
     for j in xrange(10):
         for k in xrange(10):
             start_point = [window_height * j, window_width * k]
-            img = get_rectangle(img, start_point)
-            lbl = get_rectangle(lbl, start_point)
+            img = get_rectangle(image, start_point)
+            lbl = get_rectangle(label, start_point)
             img = img.reshape(window_height * window_width, )
             lbl = lbl.reshape(window_height * window_width, )
             # max_img = numpy.max(img)
@@ -102,7 +102,7 @@ train_test_separator = 1000
 train_imgs = imgs[:train_test_separator]
 train_imgs = numpy.multiply(train_imgs, 1)
 
-test_imgs = imgs[train_test_separator:]
+test_imgs = imgs[train_test_separator:1500]
 test_imgs = numpy.multiply(test_imgs, 1)
 
 pca = None
@@ -114,4 +114,4 @@ if USE_PCA:
 
 
 train_set = DataSet(train_imgs, labels[:train_test_separator], 20, dtype=tf.float32)
-test_set = DataSet(test_imgs, labels[train_test_separator + 1:], 25, dtype=tf.float32)
+test_set = DataSet(test_imgs, labels[train_test_separator + 1:1500], 25, dtype=tf.float32)

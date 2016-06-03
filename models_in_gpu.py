@@ -163,7 +163,7 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
         v_sample = self.sample_v_given_h(h_sample)
         return [h_sample, v_sample]
 
-    def cd1(self, visibles, learning_rate=0.005, rbm_gibbs_k=15):
+    def cd1(self, visibles, learning_rate=0.5, rbm_gibbs_k=150):
         " One step of contrastive divergence, with Rao-Blackwellization "
         error = self.reconstruction_error(visibles)
         # hidden = self.sample_h_given_v(visibles)
