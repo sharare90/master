@@ -44,39 +44,39 @@ for i in xrange(len(test_lbls) - 1):
     concatenated_test_images.append(np.concatenate((label_for_window, test_imgs[i]), axis=0))
 
 concatenated_test_images = np.multiply(concatenated_test_images, 1)
-concatenated_test_images = tf.cast(concatenated_test_images, tf.float32)
-tf_concatenated_test_images = tf.Variable(concatenated_test_images)
+tf_concatenated_test_images = tf.cast(concatenated_test_images, tf.float32)
 output_test_images = sess.run(rbm.propup(tf_concatenated_test_images))
 
-guess = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
-tf_labels = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
-
-label_0 = tf.cast(tf.equal(tf_labels, 0), tf.float32)
-label_128 = tf.cast(tf.equal(tf_labels, 1), tf.float32)
-label_192 = tf.cast(tf.equal(tf_labels, 2), tf.float32)
-label_254 = tf.cast(tf.equal(tf_labels, 3), tf.float32)
-
-guess_0 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 0), tf.float32)
-guess_128 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 1), tf.float32)
-guess_192 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 2), tf.float32)
-guess_254 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 3), tf.float32)
-
-correct_0 = tf.reduce_sum(tf.mul(guess_0, label_0))
-correct_128 = tf.reduce_sum(tf.mul(guess_128, label_128))
-correct_192 = tf.reduce_sum(tf.mul(guess_192, label_192))
-correct_254 = tf.reduce_sum(tf.mul(guess_254, label_254))
-
-accuracy_0 = correct_0 / tf.reduce_sum(label_0)
-accuracy_128 = correct_128 / tf.reduce_sum(label_128)
-accuracy_192 = correct_192 / tf.reduce_sum(label_192)
-accuracy_254 = correct_254 / tf.reduce_sum(label_254)
-
-accuracy = (correct_128 + correct_192 + correct_254) / (
-tf.reduce_sum(label_128) + tf.reduce_sum(label_192) + tf.reduce_sum(label_254))
-
-print "0 accuracy: %0.4f" % sess.run(accuracy_0, feed_dict={tf_labels: test_lbls, guess: output_test_images})
-print "128 accuracy: %0.4f" % sess.run(accuracy_128, feed_dict={tf_labels: test_lbls, guess: output_test_images})
-print "192 accuracy: %0.4f" % sess.run(accuracy_192, feed_dict={tf_labels: test_lbls, guess: output_test_images})
-print "254 accuracy: %0.4f" % sess.run(accuracy_254, feed_dict={tf_labels: test_lbls, guess: output_test_images})
-# accuracy = tf.reduce_mean(tf.cast(tf.equal(guess, tf_labels), tf.float32))
-print sess.run(accuracy, feed_dict={tf_labels: test_lbls, guess: output_test_images})
+print output_test_images
+# guess = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
+# tf_labels = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
+#
+# label_0 = tf.cast(tf.equal(tf_labels, 0), tf.float32)
+# label_128 = tf.cast(tf.equal(tf_labels, 1), tf.float32)
+# label_192 = tf.cast(tf.equal(tf_labels, 2), tf.float32)
+# label_254 = tf.cast(tf.equal(tf_labels, 3), tf.float32)
+#
+# guess_0 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 0), tf.float32)
+# guess_128 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 1), tf.float32)
+# guess_192 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 2), tf.float32)
+# guess_254 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 3), tf.float32)
+#
+# correct_0 = tf.reduce_sum(tf.mul(guess_0, label_0))
+# correct_128 = tf.reduce_sum(tf.mul(guess_128, label_128))
+# correct_192 = tf.reduce_sum(tf.mul(guess_192, label_192))
+# correct_254 = tf.reduce_sum(tf.mul(guess_254, label_254))
+#
+# accuracy_0 = correct_0 / tf.reduce_sum(label_0)
+# accuracy_128 = correct_128 / tf.reduce_sum(label_128)
+# accuracy_192 = correct_192 / tf.reduce_sum(label_192)
+# accuracy_254 = correct_254 / tf.reduce_sum(label_254)
+#
+# accuracy = (correct_128 + correct_192 + correct_254) / (
+#     tf.reduce_sum(label_128) + tf.reduce_sum(label_192) + tf.reduce_sum(label_254))
+#
+# print "0 accuracy: %0.4f" % sess.run(accuracy_0, feed_dict={tf_labels: test_lbls, guess: output_test_images})
+# print "128 accuracy: %0.4f" % sess.run(accuracy_128, feed_dict={tf_labels: test_lbls, guess: output_test_images})
+# print "192 accuracy: %0.4f" % sess.run(accuracy_192, feed_dict={tf_labels: test_lbls, guess: output_test_images})
+# print "254 accuracy: %0.4f" % sess.run(accuracy_254, feed_dict={tf_labels: test_lbls, guess: output_test_images})
+# # accuracy = tf.reduce_mean(tf.cast(tf.equal(guess, tf_labels), tf.float32))
+# print sess.run(accuracy, feed_dict={tf_labels: test_lbls, guess: output_test_images})
