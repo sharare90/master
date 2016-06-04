@@ -113,5 +113,5 @@ if USE_PCA:
     test_imgs = pca.transform(test_imgs)
 
 
-train_set = DataSet(train_imgs, labels[:train_test_separator], 20, dtype=tf.float32)
+train_set = DataSet(train_imgs, labels[:train_test_separator], 10, dtype=tf.float32)
 test_set = DataSet(test_imgs, labels[train_test_separator + 1:1500], 25, dtype=tf.float32)
