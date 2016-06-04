@@ -79,8 +79,8 @@ for i in xrange(1126):
     image = image[height_start:height_end, width_start:width_end]
     label = label.reshape(256, 256)
     label = label[height_start:height_end, width_start:width_end]
-    for j in xrange(10):
-        for k in xrange(10):
+    for j in xrange(30):
+        for k in xrange(30):
             start_point = [window_height * j, window_width * k]
             img = get_rectangle(image, start_point)
             lbl = get_rectangle(label, start_point)

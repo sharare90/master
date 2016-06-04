@@ -43,7 +43,7 @@ class RestrictedBoltzmannMachine():
         v_sample = self.sample_v_given_h(h_sample)
         return [h_sample, v_sample]
 
-    def cd1(self, visibles, weights, v_bias, h_bias, learning_rate=0.5, rbm_gibbs_k=150):
+    def cd1(self, visibles,learning_rate=0.5, rbm_gibbs_k=150):
 
         " One step of contrastive divergence, with Rao-Blackwellization "
         hidden = self.propup(visibles)

@@ -26,8 +26,8 @@ width = 150
 # height = 60
 # width = 60
 
-window_height = 12
-window_width = 15
+window_height = 4
+window_width = 5
 
 NUMBER_OF_CLASSES = 4
 
