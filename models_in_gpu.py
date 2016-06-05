@@ -119,19 +119,19 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
 
     def __init__(self, name, input_size, output_size):
         with tf.name_scope("rbm_" + name):
-            self.weights = tf.Variable(
-                tf.truncated_normal([input_size, output_size],
-                                    stddev=0.1 / math.sqrt(float(input_size))), name="weights")
-            # self.weights = tf.Variable(tf.zeros([input_size, output_size]), name="weights")
+            # self.weights = tf.Variable(
+            #     tf.truncated_normal([input_size, output_size],
+            #                         stddev=1.0 / math.sqrt(float(input_size))), name="weights")
+            self.weights = tf.Variable(tf.zeros([input_size, output_size]), name="weights")
 
-            # self.v_bias = tf.Variable(tf.ones([input_size]), name="v_bias")
-            # self.h_bias = tf.Variable(tf.ones([output_size]), name="h_bias")
-            self.v_bias = tf.Variable(
-                tf.truncated_normal([input_size],
-                                    stddev=0.1 / math.sqrt(float(input_size))), name="v_bias")
-            self.h_bias = tf.Variable(
-                tf.truncated_normal([output_size],
-                                    stddev=0.1 / math.sqrt(float(input_size))), name="h_bias")
+            self.v_bias = tf.Variable(tf.zeros([input_size]), name="v_bias")
+            self.h_bias = tf.Variable(tf.zeros([output_size]), name="h_bias")
+            # self.v_bias = tf.Variable(
+            #     tf.truncated_normal([input_size],
+            #                         stddev=0.1 / math.sqrt(float(input_size))), name="v_bias")
+            # self.h_bias = tf.Variable(
+            #     tf.truncated_normal([output_size],
+            #                         stddev=0.1 / math.sqrt(float(input_size))), name="h_bias")
 
     def propup(self, visible):
         """ P(h|v) """
@@ -163,21 +163,20 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
         v_sample = self.sample_v_given_h(h_sample)
         return [h_sample, v_sample]
 
-    def cd1(self, visibles, learning_rate=0.5, rbm_gibbs_k=150):
+    def cd1(self, visibles, learning_rate=0.005, rbm_gibbs_k=1):
         " One step of contrastive divergence, with Rao-Blackwellization "
-        error = self.reconstruction_error(visibles)
-        # hidden = self.sample_h_given_v(visibles)
-        # h_start = hidden
-        # for i in xrange(rbm_gibbs_k):
-        #     v_end = self.sample_v_given_h(h_start)
-        #     h_end = self.sample_h_given_v(v_end)
-        #     h_start = h_end
-        hidden = self.propup(visibles)
+        hidden = self.sample_h_given_v(visibles)
         h_start = hidden
         for i in xrange(rbm_gibbs_k):
-            v_end = self.propdown(h_start)
-            h_end = self.propup(v_end)
+            v_end = self.sample_v_given_h(h_start)
+            h_end = self.sample_h_given_v(v_end)
             h_start = h_end
+        # hidden = self.propup(visibles)
+        # h_start = hidden
+        # for i in xrange(rbm_gibbs_k):
+        #     v_end = self.propdown(h_start)
+        #     h_end = self.propup(v_end)
+        #     h_start = h_end
         w_positive_grad = tf.matmul(tf.transpose(visibles), hidden)
         w_negative_grad = tf.matmul(tf.transpose(v_end), h_end)
 
@@ -187,7 +186,7 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
 
         update_hb = self.h_bias.assign_add(learning_rate * tf.reduce_mean(hidden - h_end, 0))
 
-        return [update_w, update_vb, update_hb, error, h_end]
+        return [update_w, update_vb, update_hb, h_end]
 
     def reconstruction_error(self, dataset):
         """ The reconstruction cost for the whole dataset """

@@ -17,11 +17,11 @@ class RestrictedBoltzmannMachine():
 
     def propup(self, visible):
         """ P(h|v) """
-        return -1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
+        return tf.nn.sigmoid(tf.matmul(visible, self.weights) + self.h_bias)
 
     def propdown(self, hidden):
         """ P(v|h) """
-        return -1.0 + 2.0 * tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
+        return tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.v_bias)
 
     def sample_h_given_v(self, v_sample):
         """ Generate a sample from the hidden layer """

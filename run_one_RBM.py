@@ -2,7 +2,7 @@ __author__ = 'sharare'
 import ibsr
 import numpy as np
 from settings import USE_PCA, PCA_COMPONENTS_COUNT, NUMBER_OF_CLASSES, window_height, window_width
-from oneRBM import RestrictedBoltzmannMachine
+from models_in_gpu import RestrictedBoltzmanMachine
 import tensorflow as tf
 
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else window_height * window_width
@@ -17,7 +17,7 @@ concatenated_images_with_labels = []
 concatenated_test_images = []
 
 label_for_window = np.zeros([4])
-rbm = RestrictedBoltzmannMachine('rbm', first_layer + 4, (window_height * window_width * NUMBER_OF_CLASSES) + 4)
+rbm = RestrictedBoltzmanMachine('rbm', first_layer + 4, (window_height * window_width * NUMBER_OF_CLASSES) + 4)
 
 for i in xrange(len(labels) - 1):
     label = labels[i]
@@ -39,7 +39,6 @@ sess.run(tf.initialize_all_variables())
 weights = tf.Variable(sess.run(update_w))
 bias = tf.Variable(sess.run(update_hb))
 label_for_testset = np.zeros([4])
-number_of_accurate_predict = 0
 for i in xrange(len(test_lbls) - 1):
     concatenated_test_images.append(np.concatenate((label_for_window, test_imgs[i]), axis=0))
 
@@ -47,14 +46,45 @@ concatenated_test_images = np.multiply(concatenated_test_images, 1)
 tf_concatenated_test_images = tf.cast(concatenated_test_images, tf.float32)
 output_test_images = sess.run(rbm.propup(tf_concatenated_test_images))
 
-print output_test_images
+# print output_test_images
+correct_0 = 0
+correct_128 = 0
+correct_192 = 0
+correct_254 = 0
+for i in xrange(len(test_lbls) - 1):
+    test_label = test_lbls[i]
+    a = (test_label == 0).sum()
+    b = (test_label == 1).sum()
+    c = (test_label == 2).sum()
+    d = (test_label == 3).sum()
+    label_0 = np.equal(np.argmax([a, b, c, d]), 0)
+    label_128 = np.equal(np.argmax([a, b, c, d]), 1)
+    label_192 = np.equal(np.argmax([a, b, c, d]), 2)
+    label_254 = np.equal(np.argmax([a, b, c, d]), 3)
+    guess_0 = np.equal(np.argmax(output_test_images[i, 0:4]), 0)
+    guess_128 = np.equal(np.argmax(output_test_images[i, 0:4]), 1)
+    guess_192 = np.equal(np.argmax(output_test_images[i, 0:4]), 2)
+    guess_254 = np.equal(np.argmax(output_test_images[i, 0:4]), 3)
+    correct_0 += np.multiply(label_0, guess_0)
+    correct_128 += np.multiply(label_128, guess_128)
+    correct_192 += np.multiply(label_192, guess_192)
+    correct_254 += np.multiply(label_254, guess_254)
+
+print float(correct_0 + correct_128 + correct_192 + correct_254)/float(len(test_lbls))
+
+
 # guess = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
-# tf_labels = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
+# tf_labels = tf.placeholder(tf.float32, [None, window_height * window_width])
 #
-# label_0 = tf.cast(tf.equal(tf_labels, 0), tf.float32)
-# label_128 = tf.cast(tf.equal(tf_labels, 1), tf.float32)
-# label_192 = tf.cast(tf.equal(tf_labels, 2), tf.float32)
-# label_254 = tf.cast(tf.equal(tf_labels, 3), tf.float32)
+# a = (test_lbls == 0).sum()
+# b = (test_lbls == 1).sum()
+# c = (test_lbls == 2).sum()
+# d = (test_lbls == 3).sum()
+#
+# label_0 = tf.cast(tf.equal(np.argmax([a, b, c, d]), 0), tf.float32)
+# label_128 = tf.cast(tf.equal(np.argmax([a, b, c, d]), 1), tf.float32)
+# label_192 = tf.cast(tf.equal(np.argmax([a, b, c, d]), 2), tf.float32)
+# label_254 = tf.cast(tf.equal(np.argmax([a, b, c, d]), 3), tf.float32)
 #
 # guess_0 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 0), tf.float32)
 # guess_128 = tf.cast(tf.equal(np.argmax(output_test_images[0:4]), 1), tf.float32)
