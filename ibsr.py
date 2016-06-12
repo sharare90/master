@@ -68,7 +68,10 @@ convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
 
 imgs = []
 labels = []
-
+number_of_0 = 0
+number_of_128 = 0
+number_of_192 = 0
+number_of_254 = 0
 
 for i in xrange(1126):
     print i
@@ -91,6 +94,14 @@ for i in xrange(1126):
     lbl = lbl.reshape(height * width, )
     lbl = lbl.astype('float')
     lbl = convert_label_to_thresholds(lbl)
+    a = (lbl == 0).sum()
+    b = (lbl == 1).sum()
+    c = (lbl == 2).sum()
+    d = (lbl == 3).sum()
+    number_of_0 += a
+    number_of_128 += b
+    number_of_192 += c
+    number_of_254 += d
     imgs.append(img)
     labels.append(lbl)
 
@@ -109,6 +120,7 @@ if USE_PCA:
     train_imgs = pca.transform(train_imgs)
     test_imgs = pca.transform(test_imgs)
 
+print number_of_0, number_of_128, number_of_192, number_of_254
 
 train_set = DataSet(train_imgs, labels[:train_test_separator], 20, dtype=tf.float32)
 test_set = DataSet(test_imgs, labels[train_test_separator + 1:], 25, dtype=tf.float32)

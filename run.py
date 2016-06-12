@@ -14,8 +14,8 @@ IMAGE_NUMBER_TO_DISPLAY_FOR_SEGMENTATION = 35
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else height * width
 
 layers = [first_layer, 512, 256, height * width * NUMBER_OF_CLASSES]
-learning_rate = 0.65
-iteration_number = 1000
+learning_rate = 0.001
+iteration_number = 10
 
 # nn = NeuralNetwork(layers, learning_rate)
 nn = DeepBeliefNetwork(layers, learning_rate)
