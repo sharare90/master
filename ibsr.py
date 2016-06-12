@@ -147,8 +147,9 @@ if settings.OVER_SAMPLING:
                                         3: settings.samples_for_254}
 
     for label, number_of_samples in number_of_samples_for_each_class.iteritems():
-        label_imgs = train_imgs[np.where(train_labels == label)]
-        label_labels = train_labels[np.where(train_labels == label)]
+        indices = list(np.where(train_labels == label)[0])
+        label_imgs = itemgetter(*indices)(train_imgs)
+        label_labels = itemgetter(*indices)(train_labels)
         counter = 0
 
         while counter + len(label_imgs) < number_of_samples:
