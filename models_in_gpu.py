@@ -165,18 +165,18 @@ class RestrictedBoltzmanMachine(NeuralNetwork):
 
     def cd1(self, visibles, learning_rate=0.005, rbm_gibbs_k=1):
         " One step of contrastive divergence, with Rao-Blackwellization "
-        hidden = self.sample_h_given_v(visibles)
-        h_start = hidden
-        for i in xrange(rbm_gibbs_k):
-            v_end = self.sample_v_given_h(h_start)
-            h_end = self.sample_h_given_v(v_end)
-            h_start = h_end
-        # hidden = self.propup(visibles)
+        # hidden = self.sample_h_given_v(visibles)
         # h_start = hidden
         # for i in xrange(rbm_gibbs_k):
-        #     v_end = self.propdown(h_start)
-        #     h_end = self.propup(v_end)
+        #     v_end = self.sample_v_given_h(h_start)
+        #     h_end = self.sample_h_given_v(v_end)
         #     h_start = h_end
+        hidden = self.propup(visibles)
+        h_start = hidden
+        for i in xrange(rbm_gibbs_k):
+            v_end = self.propdown(h_start)
+            h_end = self.propup(v_end)
+            h_start = h_end
         w_positive_grad = tf.matmul(tf.transpose(visibles), hidden)
         w_negative_grad = tf.matmul(tf.transpose(v_end), h_end)
 
@@ -210,12 +210,12 @@ class DeepBeliefNetwork(NeuralNetwork):
         input_images = tf.cast(input_images, tf.float32)
         for i in range(len(self.layers) - 1):
             rbm = RestrictedBoltzmanMachine('rbm', self.layers_size[i], self.layers_size[i + 1])
-            update_w, update_vb, update_hb, error, h_end = rbm.cd1(input_images, self.learning_rate)
+            update_w, update_vb, update_hb, h_end = rbm.cd1(input_images, self.learning_rate)
             sess = tf.Session()
             sess.run(tf.initialize_all_variables())
             self.weights[i] = tf.Variable(sess.run(update_w))
             self.bias[i] = tf.Variable(sess.run(update_hb))
-            print sess.run(error)
+            # print sess.run(error)
             input_images = sess.run(rbm.propup(input_images))
             # input_images = sess.run(h_end)
 

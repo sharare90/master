@@ -7,7 +7,7 @@ import tensorflow as tf
 
 first_layer = PCA_COMPONENTS_COUNT if USE_PCA else window_height * window_width
 layers = [first_layer, window_height * window_width * NUMBER_OF_CLASSES]
-learning_rate = 0.65
+learning_rate = 0.001
 
 ibsr.train_set.batch_size = ibsr.train_set.count()
 imgs, labels = ibsr.train_set.next_batch()
@@ -19,6 +19,10 @@ concatenated_test_images = []
 label_for_window = np.zeros([4])
 rbm = RestrictedBoltzmanMachine('rbm', first_layer + 4, (window_height * window_width * NUMBER_OF_CLASSES) + 4)
 
+label_train_0 = 0
+label_train_128 = 0
+label_train_192 = 0
+label_train_254 = 0
 for i in xrange(len(labels) - 1):
     label = labels[i]
     a = (label == 0).sum()
@@ -29,6 +33,14 @@ for i in xrange(len(labels) - 1):
     label_for_window[max_index] = 1
     concatenated_images_with_labels.append(np.concatenate((label_for_window, imgs[i]), axis=0))
     label_for_window[max_index] = 0
+    if np.equal(np.argmax([a, b, c, d]), 0):
+        label_train_0 += 1
+    elif np.equal(np.argmax([a, b, c, d]), 1):
+        label_train_128 += 1
+    elif np.equal(np.argmax([a, b, c, d]), 2):
+        label_train_192 += 1
+    else:
+        label_train_254 += 1
 
 concatenated_images_with_labels = np.multiply(concatenated_images_with_labels, 1)
 concatenated_images_with_labels = tf.cast(concatenated_images_with_labels, tf.float32)
@@ -71,6 +83,7 @@ for i in xrange(len(test_lbls) - 1):
     correct_254 += np.multiply(label_254, guess_254)
 
 print float(correct_0 + correct_128 + correct_192 + correct_254)/float(len(test_lbls))
+print label_train_0, label_train_128, label_train_192, label_train_254
 
 
 # guess = tf.placeholder(tf.float32, [None, 4 + window_height * window_width])
