@@ -7,6 +7,7 @@ import numpy as np
 
 from utils import sigmoid, sigmoid_derivative, create_random_weights, maximization
 from settings import height, width, NUMBER_OF_CLASSES, weight_loss_coefficient, window_height, window_width
+import settings
 
 __author__ = 'sharare'
 
@@ -88,8 +89,12 @@ class NeuralNetwork(Model):
 
     def test(self, imgs):
         output = self.layers[-1].output
-        reshaped_output = tf.reshape(output, shape=[imgs.shape[0], window_height * window_width, NUMBER_OF_CLASSES])
-        maximized_output = tf.arg_max(reshaped_output, 2)
+        if settings.SUPER_PIXEL:
+            maximized_output = tf.arg_max(output, 1)
+            # maximized_output = tf.reshape(maximized_output, [maximized_output.get_shape()[0].value, 1])
+        else:
+            reshaped_output = tf.reshape(output, shape=[imgs.shape[0], window_height * window_width, NUMBER_OF_CLASSES])
+            maximized_output = tf.arg_max(reshaped_output, 2)
         return self.sess.run(maximized_output, feed_dict={self.layers[0].input: imgs})
 
     def create_initial_weights(self):
@@ -108,8 +113,11 @@ class NeuralNetwork(Model):
         return bias_weights
 
     def one_hot_presentation(self, labels):
-        one_hot_matrix = np.eye(NUMBER_OF_CLASSES)[[labels]].reshape(labels.shape[0],
-                                                                     window_height * window_width * NUMBER_OF_CLASSES)
+        if settings.SUPER_PIXEL:
+            one_hot_matrix = np.eye(NUMBER_OF_CLASSES)[[labels]].reshape(labels.shape[0], NUMBER_OF_CLASSES)
+        else:
+            one_hot_matrix = np.eye(NUMBER_OF_CLASSES)[[labels]].reshape(labels.shape[0],
+                                                                         window_height * window_width * NUMBER_OF_CLASSES)
         # one_hot_matrix[np.where(one_hot_matrix == 0)] = -1
         return one_hot_matrix
 

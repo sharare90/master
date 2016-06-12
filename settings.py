@@ -12,6 +12,7 @@ THRESHOLD_192 = 2
 THRESHOLD_128 = 1
 THRESHOLD_0 = 0
 
+CROP = True
 height_start = 50
 height_end = 170
 width_start = 50
@@ -19,13 +20,7 @@ width_end = 200
 height = 120
 width = 150
 
-# height_start = 60
-# height_end = 120
-# width_start = 60
-# width_end = 120
-# height = 60
-# width = 60
-
+PARTITION = True
 window_height = 4
 window_width = 5
 
@@ -35,3 +30,11 @@ USE_PCA = False
 PCA_COMPONENTS_COUNT = 150
 
 weight_loss_coefficient = 0.1
+
+SUPER_PIXEL = True
+
+OVER_SAMPLING = True
+samples_for_0 = 5000
+samples_for_128 = 5000
+samples_for_192 = 5000
+samples_for_254 = 5000

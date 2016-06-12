@@ -1,9 +1,12 @@
 from sklearn.decomposition import KernelPCA, PCA
 import tensorflow as tf
-import numpy
+import numpy as np
 import read_data
 from settings import THRESHOLD_0, THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, height_start, height_end, width_start, \
     width_end, height, width, PCA_COMPONENTS_COUNT, USE_PCA, window_height, window_width
+import settings
+import random
+from operator import itemgetter
 
 
 class DataSet(object):
@@ -13,15 +16,15 @@ class DataSet(object):
 
         if dtype == tf.float32:
             # Convert from [0, 255] -> [0.0, 1.0].
-            images = numpy.multiply(images, 1.0 / 256.0)
-            labels = numpy.multiply(labels, 1)
+            images = np.multiply(images, 1.0 / 256.0)
+            labels = np.multiply(labels, 1)
 
-            # labels[numpy.where(labels == 1)] = 0
-            # labels[numpy.where(labels == 2)] = 0
-            # labels[numpy.where(labels == 3)] = 1
+            # labels[np.where(labels == 1)] = 0
+            # labels[np.where(labels == 2)] = 0
+            # labels[np.where(labels == 3)] = 1
 
-            # labels[numpy.where(labels == 1)] = 1
-            # labels[numpy.where(labels > 0)] = 1
+            # labels[np.where(labels == 1)] = 1
+            # labels[np.where(labels > 0)] = 1
 
             self.sample_numbers = sample_numbers
             self.batch_size = batch_size
@@ -40,8 +43,8 @@ class DataSet(object):
             # epoch is finished
             self._epochs_completed += 1
             # Shuffle data
-            perm = numpy.arange(self.sample_numbers)
-            numpy.random.shuffle(perm)
+            perm = np.arange(self.sample_numbers)
+            np.random.shuffle(perm)
             self._images = self._images[perm]
             self._labels = self._labels[perm]
             # Start next epoch
@@ -59,6 +62,7 @@ thresholds = {
     254: THRESHOLD_254,
 }
 
+
 def get_rectangle(image, start_point):
     return image[start_point[0]:start_point[0] + window_height, start_point[1]:start_point[1] + window_width]
 
@@ -67,7 +71,14 @@ def convert_label_to_thresholds(element):
     return thresholds[element]
 
 
-convert_label_to_thresholds = numpy.vectorize(convert_label_to_thresholds)
+convert_label_to_thresholds = np.vectorize(convert_label_to_thresholds)
+
+
+def crop(image, label):
+    image = image[height_start:height_end, width_start:width_end]
+    label = label[height_start:height_end, width_start:width_end]
+    return image, label
+
 
 imgs = []
 labels = []
@@ -75,35 +86,50 @@ labels = []
 for i in xrange(1126):
     print i
     image, label = read_data.get_file(i + 1, column_format=True)
+
     image = image.reshape(256, 256)
-    image = image[height_start:height_end, width_start:width_end]
     label = label.reshape(256, 256)
-    label = label[height_start:height_end, width_start:width_end]
-    for j in xrange(30):
-        for k in xrange(30):
-            start_point = [window_height * j, window_width * k]
-            img = get_rectangle(image, start_point)
-            lbl = get_rectangle(label, start_point)
-            img = img.reshape(window_height * window_width, )
-            lbl = lbl.reshape(window_height * window_width, )
-            # max_img = numpy.max(img)
-            # min_img = numpy.min(img)
-            # if max_img - min_img == 0:
-            #     max_img = 100000
-            # img = numpy.multiply(img - min_img, 1.0 / float(max_img - min_img))
+
+    if settings.CROP:
+        image, label = crop(image, label)
+
+    number_of_height_partitions = (height_end - height_start) / window_height if settings.PARTITION else 1
+    number_of_width_partitions = (width_end - width_start) / window_width if settings.PARTITION else 1
+
+    for j in xrange(number_of_height_partitions):
+        for k in xrange(number_of_width_partitions):
+            if settings.PARTITION:
+                start_point = [window_height * j, window_width * k]
+                img = get_rectangle(image, start_point)
+                lbl = get_rectangle(label, start_point)
+            img = img.reshape(img.shape[0] * img.shape[1], )
+            lbl = lbl.reshape(lbl.shape[0] * lbl.shape[1], )
             lbl = lbl.astype('float')
             lbl = convert_label_to_thresholds(lbl)
+            if settings.SUPER_PIXEL:
+                count_0 = (lbl == thresholds[0]).sum()
+                count_128 = (lbl == thresholds[128]).sum()
+                count_192 = (lbl == thresholds[192]).sum()
+                count_254 = (lbl == thresholds[254]).sum()
+
+                lbl = np.argmax([count_0, count_128, count_192, count_254])
+
+            # max_img = np.max(img)
+            # min_img = np.min(img)
+            # if max_img - min_img == 0:
+            #     max_img = 100000
+            # img = np.multiply(img - min_img, 1.0 / float(max_img - min_img))
+
             imgs.append(img)
             labels.append(lbl)
-    
 
-train_test_separator = 1000
+train_test_separator = 900000
 
 train_imgs = imgs[:train_test_separator]
-train_imgs = numpy.multiply(train_imgs, 1)
+train_labels = labels[:train_test_separator]
 
-test_imgs = imgs[train_test_separator:1500]
-test_imgs = numpy.multiply(test_imgs, 1)
+test_imgs = imgs[train_test_separator:]
+test_imgs = np.multiply(test_imgs, 1)
 
 pca = None
 if USE_PCA:
@@ -112,6 +138,33 @@ if USE_PCA:
     train_imgs = pca.transform(train_imgs)
     test_imgs = pca.transform(test_imgs)
 
+if settings.OVER_SAMPLING:
+    over_sampled_set_images = []
+    over_sampled_set_labels = []
+    number_of_samples_for_each_class = {0: settings.samples_for_0,
+                                        1: settings.samples_for_128,
+                                        2: settings.samples_for_192,
+                                        3: settings.samples_for_254}
 
-train_set = DataSet(train_imgs, labels[:train_test_separator], 10, dtype=tf.float32)
-test_set = DataSet(test_imgs, labels[train_test_separator + 1:1500], 25, dtype=tf.float32)
+    for label, number_of_samples in number_of_samples_for_each_class.iteritems():
+        label_imgs = train_imgs[np.where(train_labels == label)]
+        label_labels = train_labels[np.where(train_labels == label)]
+        counter = 0
+
+        while counter + len(label_imgs) < number_of_samples:
+            over_sampled_set_images.extend(label_imgs)
+            over_sampled_set_labels.extend(label_labels)
+            counter += len(label_imgs)
+
+        number_of_required_samples = number_of_samples - counter
+        samples = random.sample(range(len(label_imgs)), number_of_required_samples)
+        over_sampled_set_images.extend(itemgetter(*samples)(label_imgs))
+        over_sampled_set_labels.extend(itemgetter(*samples)(label_labels))
+
+    train_imgs = over_sampled_set_images
+    train_labels = over_sampled_set_labels
+
+train_imgs = np.multiply(train_imgs, 1)
+
+train_set = DataSet(train_imgs, train_labels, 10, dtype=tf.float32)
+test_set = DataSet(test_imgs, labels[train_test_separator + 1:], 25, dtype=tf.float32)

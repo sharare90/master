@@ -80,3 +80,8 @@ print output_test_images
 # print "254 accuracy: %0.4f" % sess.run(accuracy_254, feed_dict={tf_labels: test_lbls, guess: output_test_images})
 # # accuracy = tf.reduce_mean(tf.cast(tf.equal(guess, tf_labels), tf.float32))
 # print sess.run(accuracy, feed_dict={tf_labels: test_lbls, guess: output_test_images})
+from read_data import get_file
+img, lbl = get_file(100)
+
+
+
