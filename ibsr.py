@@ -169,4 +169,4 @@ if settings.OVER_SAMPLING:
 train_imgs = np.multiply(train_imgs, 1)
 
 train_set = DataSet(train_imgs, train_labels, 10, dtype=tf.float32)
-test_set = DataSet(test_imgs, labels[train_test_separator + 1:], 25, dtype=tf.float32)
+test_set = DataSet(test_imgs, labels[train_test_separator:], 113400, dtype=tf.float32)

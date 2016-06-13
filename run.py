@@ -19,11 +19,11 @@ if settings.SUPER_PIXEL:
     layers = [first_layer, 512, 256, NUMBER_OF_CLASSES]
 else:
     layers = [first_layer, 512, 256, window_height * window_width * NUMBER_OF_CLASSES]
-learning_rate = 0.0001
-iteration_number = 1000
+learning_rate = 0.001
+iteration_number = 4000
 
-# nn = NeuralNetwork(layers, learning_rate)
-nn = DeepBeliefNetwork(layers, learning_rate)
+nn = NeuralNetwork(layers, learning_rate)
+# nn = DeepBeliefNetwork(layers, learning_rate)
 nn.train(ibsr.train_set, iteration_number)
 print 'checked'
 
