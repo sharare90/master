@@ -37,8 +37,8 @@ tf_bias_matrix = tf.placeholder(tf.float32, shape=[113400, 24])
 output = tf.matmul(input_data, rbm.W) + tf_bias_matrix
 result = rbm.sess.run(output, feed_dict={input_data: test_data, tf_bias_matrix: bias_matrix})
 
-output = rbm.h
-result = rbm.sess.run(output, feed_dict={rbm.x: test_data})
+# output = rbm.h
+# result = rbm.sess.run(output, feed_dict={rbm.x: test_data})
 
 
 result = result[:, 20:]
