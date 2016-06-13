@@ -36,7 +36,7 @@ class DataSet(object):
     def count(self):
         return self.sample_numbers
 
-    def next_batch(self):
+    def next_batch(self, batch_size=None):
         start = self._index_in_epoch
         self._index_in_epoch += self.batch_size
         if self._index_in_epoch > self.sample_numbers:
