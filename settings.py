@@ -21,8 +21,8 @@ height = 120
 width = 150
 
 PARTITION = True
-window_height = 4
-window_width = 5
+window_height = 8
+window_width = 10
 
 NUMBER_OF_CLASSES = 4
 
@@ -31,7 +31,7 @@ PCA_COMPONENTS_COUNT = 150
 
 weight_loss_coefficient = 0.1
 
-SUPER_PIXEL = True
+SUPER_PIXEL = False
 
 OVER_SAMPLING = True
 samples_for_0 = 5000

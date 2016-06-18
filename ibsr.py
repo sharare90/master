@@ -16,7 +16,7 @@ class DataSet(object):
 
         if dtype == tf.float32:
             # Convert from [0, 255] -> [0.0, 1.0].
-            images = np.multiply(images, 1.0 / 256.0)
+            images = np.multiply(images, 1)
             labels = np.multiply(labels, 1)
 
             # labels[np.where(labels == 1)] = 0
@@ -86,7 +86,8 @@ labels = []
 for i in xrange(1126):
     print i
     image, label = read_data.get_file(i + 1, column_format=True)
-
+    image = image - min(image)
+    image = image / float(max(image))
     image = image.reshape(256, 256)
     label = label.reshape(256, 256)
 
@@ -123,7 +124,7 @@ for i in xrange(1126):
             imgs.append(img)
             labels.append(lbl)
 
-train_test_separator = 900000
+train_test_separator = number_of_height_partitions * number_of_width_partitions * 1000
 
 train_imgs = imgs[:train_test_separator]
 train_labels = labels[:train_test_separator]
@@ -169,4 +170,4 @@ if settings.OVER_SAMPLING:
 train_imgs = np.multiply(train_imgs, 1)
 
 train_set = DataSet(train_imgs, train_labels, 10, dtype=tf.float32)
-test_set = DataSet(test_imgs, labels[train_test_separator:], 113400, dtype=tf.float32)
+test_set = DataSet(test_imgs, labels[train_test_separator:], number_of_height_partitions * number_of_width_partitions * 126, dtype=tf.float32)

@@ -28,11 +28,11 @@ test_data = test_data.astype(np.float32)
 
 import tensorflow as tf
 
-input_data = tf.placeholder(tf.float32, shape=[113400, 24])
+input_data = tf.placeholder(tf.float32, shape=[28350, 84])
 bias_matrix = rbm.sess.run(rbm.b)
-bias_matrix = np.multiply([bias_matrix,] * 113400, 1)
-bias_matrix = bias_matrix.reshape(113400, 24)
-tf_bias_matrix = tf.placeholder(tf.float32, shape=[113400, 24])
+bias_matrix = np.multiply([bias_matrix,] * 28350, 1)
+bias_matrix = bias_matrix.reshape(28350, 84)
+tf_bias_matrix = tf.placeholder(tf.float32, shape=[28350, 84])
 
 output = tf.matmul(input_data, rbm.W) + tf_bias_matrix
 result = rbm.sess.run(output, feed_dict={input_data: test_data, tf_bias_matrix: bias_matrix})
@@ -41,7 +41,7 @@ result = rbm.sess.run(output, feed_dict={input_data: test_data, tf_bias_matrix: 
 # result = rbm.sess.run(output, feed_dict={rbm.x: test_data})
 
 
-result = result[:, 20:]
+result = result[:, 80:]
 result = np.argmax(result, 1)
 
 accuracy = (result == test_lbls).sum() / float(len(test_lbls))

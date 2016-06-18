@@ -1,6 +1,7 @@
 from evaluations import SimpleEvaluation
 import ibsr
 import settings
+import tensorflow as tf
 
 from models_in_gpu import NeuralNetwork, DeepBeliefNetwork
 from display import display
@@ -18,18 +19,21 @@ first_layer = PCA_COMPONENTS_COUNT if USE_PCA else window_height * window_width
 if settings.SUPER_PIXEL:
     layers = [first_layer, 512, 256, NUMBER_OF_CLASSES]
 else:
-    layers = [first_layer, 512, 256, window_height * window_width * NUMBER_OF_CLASSES]
+    layers = [first_layer, 65, 100, window_height * window_width * NUMBER_OF_CLASSES]
 learning_rate = 0.001
-iteration_number = 4000
+iteration_number = 1000
 
-nn = NeuralNetwork(layers, learning_rate)
-# nn = DeepBeliefNetwork(layers, learning_rate)
+# nn = NeuralNetwork(layers, learning_rate)
+nn = DeepBeliefNetwork(layers, learning_rate)
 nn.train(ibsr.train_set, iteration_number)
 print 'checked'
 
 simple_evaluation = SimpleEvaluation(nn)
 accuracy = simple_evaluation.evaluate(ibsr.test_set)
-print 'accuracy: %0.4f' % accuracy
+
+simple_evaluation.evauluate_dice_similarity(ibsr.test_set)
+
+# print 'accuracy: %0.4f' % accuracy
 
 # from settings import THRESHOLD_128, THRESHOLD_192, THRESHOLD_254, THRESHOLD_0
 # import numpy

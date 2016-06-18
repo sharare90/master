@@ -36,8 +36,8 @@ def display(image, guess=None, label=None):
                 #     im[i, j, 1:2] = 1
                 #     im[i, j, 0] = 0
         image = im
-    plt.imshow(image, cmap="gray")
-    plt.show()
+    return plt.imshow(image, cmap="gray")
+    # plt.show()
 
 
 if __name__ == '__main__':
