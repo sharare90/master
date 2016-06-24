@@ -18,6 +18,9 @@ class DataSet(object):
             # Convert from [0, 255] -> [0.0, 1.0].
             images = np.multiply(images, 1)
             labels = np.multiply(labels, 1)
+            notConsider = images
+            notConsider[np.where(labels == 0)] = 0
+            images = images * notConsider
 
             # labels[np.where(labels == 1)] = 0
             # labels[np.where(labels == 2)] = 0

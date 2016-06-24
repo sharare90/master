@@ -14,15 +14,15 @@ THRESHOLD_0 = 0
 
 CROP = True
 height_start = 50
-height_end = 170
+height_end = 200
 width_start = 50
 width_end = 200
-height = 120
+height = 150
 width = 150
 
 PARTITION = True
-window_height = 8
-window_width = 10
+window_height = 5
+window_width = 5
 
 NUMBER_OF_CLASSES = 4
 
@@ -34,7 +34,7 @@ weight_loss_coefficient = 0.1
 SUPER_PIXEL = False
 
 OVER_SAMPLING = True
-samples_for_0 = 5000
-samples_for_128 = 5000
-samples_for_192 = 5000
-samples_for_254 = 5000
+samples_for_0 = 50000
+samples_for_128 = 50000
+samples_for_192 = 50000
+samples_for_254 = 50000
