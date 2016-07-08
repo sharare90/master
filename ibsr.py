@@ -171,6 +171,8 @@ if settings.OVER_SAMPLING:
     train_labels = over_sampled_set_labels
 
 train_imgs = np.multiply(train_imgs, 1)
+train_labels = np.multiply(train_labels, 1)
+labels = np.multiply(labels, 1)
 
 train_set = DataSet(train_imgs, train_labels, 10, dtype=tf.float32)
 test_set = DataSet(test_imgs, labels[train_test_separator:], number_of_height_partitions * number_of_width_partitions * 126, dtype=tf.float32)
